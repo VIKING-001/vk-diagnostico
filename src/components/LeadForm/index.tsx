@@ -25,6 +25,11 @@ export function LeadForm() {
 
   const currentIdx = PROGRESS_STEPS.indexOf(step);
 
+  function goToStep(next: Step) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStep(next);
+  }
+
   async function handleFinalSubmit(diagData: Pick<LeadData,
     "tempo_mercado" | "procedimentos_mes" | "ticket_medio" | "retorno_cliente" |
     "fonte_clientes" | "ciclo_vendas" | "taxa_fechamento" |
@@ -40,7 +45,7 @@ export function LeadForm() {
       console.error("Erro ao salvar lead:", e);
     } finally {
       setSending(false);
-      setStep("sucesso");
+      goToStep("sucesso");
     }
   }
 
@@ -91,10 +96,10 @@ export function LeadForm() {
       {/* Steps */}
       <AnimatePresence mode="wait">
         <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
-          {step === "triagem" && <StepTriagem defaultValues={formData} onNext={(data, qualificado) => { setFormData(f => ({ ...f, ...data, qualificado })); setStep(qualificado ? "contato" : "descartado"); }} />}
-          {step === "descartado" && <StepDescartado onBack={() => setStep("triagem")} />}
-          {step === "contato" && <StepContato defaultValues={formData} onNext={(data) => { setFormData(f => ({ ...f, ...data })); setStep("diagnostico"); }} onBack={() => setStep("triagem")} />}
-          {step === "diagnostico" && <StepDiagnostico defaultValues={formData} onNext={handleFinalSubmit} onBack={() => setStep("contato")} />}
+          {step === "triagem" && <StepTriagem defaultValues={formData} onNext={(data, qualificado) => { setFormData(f => ({ ...f, ...data, qualificado })); goToStep(qualificado ? "contato" : "descartado"); }} />}
+          {step === "descartado" && <StepDescartado onBack={() => goToStep("triagem")} />}
+          {step === "contato" && <StepContato defaultValues={formData} onNext={(data) => { setFormData(f => ({ ...f, ...data })); goToStep("diagnostico"); }} onBack={() => goToStep("triagem")} />}
+          {step === "diagnostico" && <StepDiagnostico defaultValues={formData} onNext={handleFinalSubmit} onBack={() => goToStep("contato")} />}
           {step === "sucesso" && <StepSucesso nome={formData.nome || ""} whatsapp={formData.whatsapp || ""} />}
         </motion.div>
       </AnimatePresence>

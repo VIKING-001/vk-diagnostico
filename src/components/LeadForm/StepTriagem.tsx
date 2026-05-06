@@ -81,7 +81,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
       {/* Q4 */}
       <div>
         <label className={labelCls}>Qual é o orçamento mensal disponível para marketing?</label>
-        <div className="grid grid-cols-2 gap-2 mt-2">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-2 mt-2">
           {["Até R$1.500", "R$1.500 – R$3.000", "R$3.000 – R$6.000", "Acima de R$6.000"].map(o => (
             <RadioCard key={o} value={o} label={o} selected={watched.orcamento === o} onChange={() => setValue("orcamento", o, { shouldValidate: true })} />
           ))}

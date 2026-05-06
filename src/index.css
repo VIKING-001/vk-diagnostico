@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: hsl(222 47% 2%);
+  --color-primary: hsl(42 100% 55%);
+  --color-primary-foreground: hsl(222 47% 5%);
+  --color-secondary: hsl(222 47% 8%);
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: hsl(222 47% 2%);
+  color: hsl(0 0% 97%);
+  font-family: 'Barlow', sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: 'Bebas Neue', sans-serif;
+}

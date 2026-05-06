@@ -28,7 +28,7 @@ const taCls = `${inputCls} min-h-[90px] resize-none`;
 const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-1";
 const labelCls = "block text-white/80 text-sm mb-2";
 
-function RadioCard({ value, label, selected, onChange }: { value: string; label: string; selected: boolean; onChange: () => void }) {
+function RadioCard({ value: _value, label, selected, onChange }: { value: string; label: string; selected: boolean; onChange: () => void }) {
   return (
     <label className={`flex items-center gap-3 p-3 border cursor-pointer transition-all duration-150 ${
       selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.1)] text-white" : "border-white/10 text-white/50 hover:border-white/25"

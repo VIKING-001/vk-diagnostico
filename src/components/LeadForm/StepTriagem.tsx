@@ -4,7 +4,6 @@ import { z } from "zod";
 
 const schema = z.object({
   negocio: z.string().min(3, "Conta um pouco sobre o que você faz"),
-  tipo_negocio: z.string().min(1, "Selecione o tipo do seu negócio"),
   desafio: z.string().min(1, "Selecione uma opção"),
   marketing_anterior: z.string().min(1, "Selecione uma opção"),
   orcamento: z.string().min(1, "Selecione uma opção"),
@@ -16,14 +15,6 @@ type TriagemData = z.infer<typeof schema>;
 const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
 const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-1";
 const labelCls = "block text-white/80 text-sm mb-2";
-
-const TIPO_OPTIONS = [
-  { value: "restaurante", label: "🍔  Restaurante / Delivery / Lanchonete / Bar" },
-  { value: "presencial", label: "💆  Salão / Clínica / Academia / Serviço presencial" },
-  { value: "consultivo", label: "📊  Consultoria / Agência / Serviço B2B" },
-  { value: "ecommerce", label: "🛒  E-commerce / Loja online" },
-  { value: "autonomo", label: "🎨  Profissional liberal / Autônomo / Freelancer" },
-];
 
 function RadioCard({ value, label, selected, onChange }: { value: string; label: string; selected: boolean; onChange: () => void }) {
   return (
@@ -45,7 +36,7 @@ interface Props {
 export function StepTriagem({ defaultValues, onNext }: Props) {
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<TriagemData>({
     resolver: zodResolver(schema),
-    defaultValues: { negocio: "", tipo_negocio: "", desafio: "", marketing_anterior: "", orcamento: "", quando_comecar: "", ...defaultValues },
+    defaultValues: { negocio: "", desafio: "", marketing_anterior: "", orcamento: "", quando_comecar: "", ...defaultValues },
   });
 
   const watched = watch();
@@ -60,24 +51,13 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
 
       {/* Q1 */}
       <div>
-        <label className={labelCls}>Qual é o seu negócio e o que você vende?</label>
-        <input {...register("negocio")} placeholder="Ex: Hamburgueria artesanal em Goiânia..." className={inputCls} />
+        <label className={labelCls}>O que você faz e o que vende?</label>
+        <p className="text-white/30 text-xs mb-2">Pode ser qualquer negócio — produto, serviço, atendimento presencial ou online.</p>
+        <input {...register("negocio")} placeholder="Ex: Tenho uma hamburgueria, sou consultor financeiro, vendo roupas online..." className={inputCls} />
         {errors.negocio && <p className={errorCls}>{errors.negocio.message}</p>}
       </div>
 
-      {/* Q2 — tipo de negócio */}
-      <div>
-        <label className={labelCls}>Como o seu negócio funciona?</label>
-        <p className="text-white/30 text-xs mb-3">Isso define quais perguntas faremos no diagnóstico.</p>
-        <div className="flex flex-col gap-2">
-          {TIPO_OPTIONS.map(o => (
-            <RadioCard key={o.value} value={o.value} label={o.label} selected={watched.tipo_negocio === o.value} onChange={() => setValue("tipo_negocio", o.value, { shouldValidate: true })} />
-          ))}
-        </div>
-        {errors.tipo_negocio && <p className={errorCls}>{errors.tipo_negocio.message}</p>}
-      </div>
-
-      {/* Q3 */}
+      {/* Q2 */}
       <div>
         <label className={labelCls}>Qual é o maior desafio no seu negócio agora?</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
@@ -88,7 +68,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
         {errors.desafio && <p className={errorCls}>{errors.desafio.message}</p>}
       </div>
 
-      {/* Q4 */}
+      {/* Q3 */}
       <div>
         <label className={labelCls}>Você já investiu em marketing digital antes?</label>
         <div className="flex flex-col sm:flex-row gap-2 mt-2">
@@ -99,7 +79,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
         {errors.marketing_anterior && <p className={errorCls}>{errors.marketing_anterior.message}</p>}
       </div>
 
-      {/* Q5 */}
+      {/* Q4 */}
       <div>
         <label className={labelCls}>Qual é o orçamento mensal disponível para marketing?</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
@@ -110,7 +90,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
         {errors.orcamento && <p className={errorCls}>{errors.orcamento.message}</p>}
       </div>
 
-      {/* Q6 — chave */}
+      {/* Q5 — chave */}
       <div>
         <label className={labelCls}>Quando você quer começar?</label>
         <p className="text-white/30 text-xs mb-2">Seja honesto — isso não elimina ninguém, só ajuda a gente a priorizar.</p>

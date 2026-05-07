@@ -110,15 +110,33 @@ function LeadCard({ lead }: { lead: Lead }) {
       {open && (
         <div className="px-5 pb-5 border-t border-white/5 pt-4 space-y-4">
           {/* Contato */}
-          <div className="flex flex-wrap gap-3">
-            <a href={waLink} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-xs tracking-widest uppercase px-5 py-2.5 rounded-sm hover:opacity-90">
-              WhatsApp
-            </a>
-            <a href={`mailto:${lead.email}`}
-              className="inline-flex items-center gap-2 border border-white/15 text-white/60 text-xs tracking-widest uppercase px-5 py-2.5 rounded-sm hover:border-white/30">
-              {lead.email}
-            </a>
+          <div className="space-y-3">
+            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+              <span className="text-white/35">Nome completo</span>
+              <span className="text-white/80 font-medium">{lead.nome}</span>
+            </div>
+            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+              <span className="text-white/35">WhatsApp</span>
+              <span className="text-white/80 font-medium">{lead.whatsapp}</span>
+            </div>
+            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+              <span className="text-white/35">E-mail</span>
+              <span className="text-white/80">{lead.email}</span>
+            </div>
+            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+              <span className="text-white/35">Empresa</span>
+              <span className="text-white/80">{lead.empresa}</span>
+            </div>
+            <div className="flex flex-wrap gap-3 pt-1">
+              <a href={waLink} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-xs tracking-widest uppercase px-5 py-2.5 rounded-sm hover:opacity-90">
+                ↗ Abrir WhatsApp
+              </a>
+              <a href={`mailto:${lead.email}`}
+                className="inline-flex items-center gap-2 border border-white/15 text-white/60 text-xs tracking-widest uppercase px-5 py-2.5 rounded-sm hover:border-white/30">
+                ✉ Enviar e-mail
+              </a>
+            </div>
           </div>
 
           {/* Triagem */}

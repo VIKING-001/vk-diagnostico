@@ -4,6 +4,14 @@ import { supabase } from "../lib/supabase";
 const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASSWORD ?? "vk@admin2024";
 const SESSION_KEY = "vk_admin_auth";
 
+const TIPO_LABELS: Record<string, string> = {
+  restaurante: "🍔 Restaurante / Delivery",
+  presencial:  "💆 Serviço presencial",
+  consultivo:  "📊 Consultoria / Agência / B2B",
+  ecommerce:   "🛒 E-commerce",
+  autonomo:    "🎨 Profissional liberal",
+};
+
 interface Lead {
   id: string;
   created_at: string;
@@ -13,6 +21,7 @@ interface Lead {
   email: string;
   qualificado: boolean;
   negocio: string;
+  tipo_negocio: string;
   desafio: string;
   marketing_anterior: string;
   orcamento: string;
@@ -91,7 +100,7 @@ function LeadCard({ lead }: { lead: Lead }) {
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/3 transition-colors"
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
           <div>
             <p className="font-bold text-sm text-white">{lead.nome}</p>
             <p className="text-xs text-white/40">{lead.empresa}</p>
@@ -100,6 +109,11 @@ function LeadCard({ lead }: { lead: Lead }) {
             ? <span className="text-[0.55rem] tracking-widest uppercase bg-[hsl(42_100%_55%/0.15)] text-[hsl(42_100%_55%)] px-2 py-1 rounded-sm">Qualificado</span>
             : <span className="text-[0.55rem] tracking-widest uppercase bg-white/5 text-white/30 px-2 py-1 rounded-sm">Não qualificado</span>
           }
+          {lead.tipo_negocio && (
+            <span className="text-[0.55rem] tracking-widest uppercase bg-white/5 text-white/40 px-2 py-1 rounded-sm hidden sm:inline">
+              {TIPO_LABELS[lead.tipo_negocio] ?? lead.tipo_negocio}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-6">
           <p className="text-xs text-white/30 hidden sm:block">{formatDate(lead.created_at)}</p>

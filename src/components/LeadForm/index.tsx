@@ -99,7 +99,7 @@ export function LeadForm() {
           {step === "triagem" && <StepTriagem defaultValues={formData} onNext={(data, qualificado) => { setFormData(f => ({ ...f, ...data, qualificado })); goToStep(qualificado ? "contato" : "descartado"); }} />}
           {step === "descartado" && <StepDescartado onBack={() => goToStep("triagem")} />}
           {step === "contato" && <StepContato defaultValues={formData} onNext={(data) => { setFormData(f => ({ ...f, ...data })); goToStep("diagnostico"); }} onBack={() => goToStep("triagem")} />}
-          {step === "diagnostico" && <StepDiagnostico defaultValues={formData} onNext={handleFinalSubmit} onBack={() => goToStep("contato")} />}
+          {step === "diagnostico" && <StepDiagnostico defaultValues={formData} tipo_negocio={formData.tipo_negocio} onNext={handleFinalSubmit} onBack={() => goToStep("contato")} />}
           {step === "sucesso" && <StepSucesso nome={formData.nome || ""} whatsapp={formData.whatsapp || ""} />}
         </motion.div>
       </AnimatePresence>

@@ -7,6 +7,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface LeadData {
   negocio: string;
+  tipo_negocio: string;
   desafio: string;
   marketing_anterior: string;
   orcamento: string;

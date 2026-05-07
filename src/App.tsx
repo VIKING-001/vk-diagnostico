@@ -1,9 +1,10 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LeadForm } from "./components/LeadForm";
+import { AdminPage } from "./pages/AdminPage";
 
-function App() {
+function FormLayout() {
   return (
     <div className="min-h-screen bg-[hsl(222_47%_2%)] text-white">
-      {/* Minimal header */}
       <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
         <span className="font-display text-2xl text-[hsl(42_100%_55%)] tracking-wider">
           VK COMPANY
@@ -15,11 +16,21 @@ function App() {
           ← Voltar ao site
         </a>
       </header>
-
       <main className="px-6 py-12 md:py-16">
         <LeadForm />
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<FormLayout />} />
+        <Route path="/admin" element={<AdminPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

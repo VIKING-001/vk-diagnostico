@@ -15,74 +15,49 @@ const schema = z.object({
 
 type TriagemData = z.infer<typeof schema>;
 
-const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
-const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-1";
-const labelCls = "block text-white/80 text-sm mb-2";
+const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-base sm:text-sm";
+const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-2";
 
 const SEGMENTO_GRUPOS = [
-  {
-    cat: "🍔 Alimentação",
-    itens: ["Restaurante", "Lanchonete", "Delivery", "Bar e Boteco", "Churrascaria", "Buffet", "Padaria", "Confeitaria", "Café"],
-  },
-  {
-    cat: "🏥 Saúde e Bem-estar",
-    itens: ["Clínica Médica", "Odontologia", "Psicologia", "Estética", "Salão de Beleza", "Academia", "Personal Trainer", "Pilates", "Farmácia", "Nutrição"],
-  },
-  {
-    cat: "📚 Educação",
-    itens: ["Escola", "Curso Presencial", "Curso Online", "Infoproduto", "Coaching", "Mentoria"],
-  },
-  {
-    cat: "🛍️ Comércio e Varejo",
-    itens: ["Loja Física", "E-commerce", "Moda e Vestuário", "Calçados", "Pet Shop", "Veterinário", "Loja de Veículos", "Loja de Eletrônicos"],
-  },
-  {
-    cat: "🏠 Imóveis e Construção",
-    itens: ["Imobiliária", "Corretor de Imóveis", "Construtora", "Incorporadora", "Arquitetura", "Design de Interiores", "Reforma", "Engenharia"],
-  },
-  {
-    cat: "⚖️ Profissionais Liberais",
-    itens: ["Advocacia", "Contabilidade", "Consultoria Empresarial", "Recursos Humanos", "Psicólogo Liberal", "Médico Liberal"],
-  },
-  {
-    cat: "💻 Tecnologia e Digital",
-    itens: ["Software e SaaS", "Agência de Marketing", "Desenvolvimento Web", "Freelancer", "Criador de Conteúdo", "Influenciador Digital"],
-  },
-  {
-    cat: "🚀 Outros",
-    itens: ["Segurança e Vigilância", "Logística", "Transportadora", "Turismo", "Hotelaria e Pousada", "Eventos e Casamentos", "Energia Solar", "Franquia", "Indústria", "Agronegócio", "Outro"],
-  },
+  { cat: "🍔 Alimentação",            itens: ["Restaurante", "Lanchonete", "Delivery", "Bar e Boteco", "Churrascaria", "Buffet", "Padaria", "Confeitaria", "Café"] },
+  { cat: "🏥 Saúde e Bem-estar",      itens: ["Clínica Médica", "Odontologia", "Psicologia", "Estética", "Salão de Beleza", "Academia", "Personal Trainer", "Pilates", "Farmácia", "Nutrição"] },
+  { cat: "📚 Educação",               itens: ["Escola", "Curso Presencial", "Curso Online", "Infoproduto", "Coaching", "Mentoria"] },
+  { cat: "🛍️ Comércio e Varejo",     itens: ["Loja Física", "E-commerce", "Moda e Vestuário", "Calçados", "Pet Shop", "Veterinário", "Loja de Veículos", "Eletrônicos"] },
+  { cat: "🏠 Imóveis e Construção",   itens: ["Imobiliária", "Corretor de Imóveis", "Construtora", "Incorporadora", "Arquitetura", "Design de Interiores", "Reforma", "Engenharia"] },
+  { cat: "⚖️ Profissionais Liberais", itens: ["Advocacia", "Contabilidade", "Consultoria Empresarial", "Recursos Humanos"] },
+  { cat: "💻 Tecnologia e Digital",   itens: ["Software e SaaS", "Agência de Marketing", "Desenvolvimento Web", "Freelancer", "Criador de Conteúdo", "Influenciador Digital"] },
+  { cat: "🚀 Outros",                 itens: ["Segurança e Vigilância", "Logística", "Transportadora", "Turismo", "Hotelaria e Pousada", "Eventos e Casamentos", "Energia Solar", "Franquia", "Indústria", "Agronegócio", "Outro"] },
 ];
 
-function RadioCard({ label, selected, onChange }: { label: string; selected: boolean; onChange: () => void }) {
+// Opção clicável grande, ideal mobile (sem scroll horizontal, fácil de tocar)
+function Option({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
   return (
-    <label className={`flex items-center gap-3 px-4 py-3 border cursor-pointer transition-all duration-150 ${
-      selected
-        ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.1)] text-white"
-        : "border-white/10 text-white/60 hover:border-white/30 hover:text-white/80"
-    }`}>
-      <input type="radio" checked={selected} onChange={onChange} className="sr-only" />
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-4 py-4 border text-left transition-all duration-150 active:scale-[0.99] ${
+        selected
+          ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.12)] text-white"
+          : "border-white/10 text-white/70 hover:border-white/30 hover:text-white"
+      }`}
+    >
       <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${
         selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/30"
       }`} />
-      <span className="text-sm">{label}</span>
-    </label>
+      <span className="text-[15px] sm:text-sm leading-tight">{label}</span>
+    </button>
   );
 }
 
-// ── SUB-STEPS ──────────────────────────────────────────────────────────────
-// 0: O que faz
-// 1: Segmento (página dedicada)
-// 2: Desafio + Marketing anterior
-// 3: Orçamento + Quando começar
-const SUB_STEPS = 4;
-const fieldsPerSub: (keyof TriagemData)[][] = [
-  ["negocio"],
-  ["segmento"],
-  ["desafio", "marketing_anterior"],
-  ["orcamento", "quando_comecar"],
-];
-const subTitles = ["Seu negócio", "Seu segmento", "Seu momento", "Seu plano"];
+// ── SUB-STEPS — 1 pergunta por tela ─────────────────────────────────────
+// 0: negocio (texto — botão continuar)
+// 1: segmento (auto-advance)
+// 2: desafio (auto-advance)
+// 3: marketing_anterior (auto-advance)
+// 4: orcamento (auto-advance)
+// 5: quando_comecar (auto-advance + submit)
+const SUB_STEPS = 6;
+const subTitles = ["O que você faz", "Seu segmento", "Maior desafio", "Marketing", "Orçamento", "Quando começar"];
 
 interface Props {
   defaultValues: Partial<TriagemData>;
@@ -100,9 +75,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
 
   const watched = watch();
 
-  async function handleSubNext() {
-    const valid = await trigger(fieldsPerSub[sub]);
-    if (!valid) return;
+  function goNext() {
     if (sub < SUB_STEPS - 1) {
       window.scrollTo({ top: 0, behavior: "smooth" });
       setSub(s => s + 1);
@@ -114,124 +87,170 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
     }
   }
 
+  function pickAndAdvance(field: keyof TriagemData, value: string) {
+    setValue(field, value, { shouldValidate: true });
+    // pequeno delay pro usuário ver a seleção
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (sub < SUB_STEPS - 1) setSub(s => s + 1);
+      else handleSubmit((data) => {
+        const qualificado = !(data.quando_comecar === "Ainda pesquisando — sem prazo" && data.orcamento === "Até R$1.500");
+        onNext(data, qualificado);
+      })();
+    }, 280);
+  }
+
+  async function handleTextNext() {
+    const valid = await trigger("negocio");
+    if (!valid) return;
+    goNext();
+  }
+
   return (
-    <div className="space-y-1">
-      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[hsl(42_100%_55%)] mb-6">
-        {subTitles[sub]} — parte {sub + 1} de {SUB_STEPS}
+    <div>
+      <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[hsl(42_100%_55%)] mb-2">
+        {subTitles[sub]} — {sub + 1} de {SUB_STEPS}
       </p>
+
+      {/* barra de progresso fina */}
+      <div className="flex gap-1 mb-8">
+        {Array.from({ length: SUB_STEPS }).map((_, i) => (
+          <div key={i} className={`flex-1 h-0.5 transition-all duration-300 ${
+            i < sub ? "bg-[hsl(42_100%_55%)]" : i === sub ? "bg-[hsl(42_100%_55%/0.5)]" : "bg-white/10"
+          }`} />
+        ))}
+      </div>
 
       <AnimatePresence mode="wait">
         <motion.div
           key={sub}
-          initial={{ opacity: 0, x: 30 }}
+          initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
-          transition={{ duration: 0.22 }}
-          className="space-y-6"
+          exit={{ opacity: 0, x: -24 }}
+          transition={{ duration: 0.2 }}
         >
 
-          {/* ── SUB 0 — O que faz ── */}
+          {/* SUB 0 — O que faz */}
           {sub === 0 && (
             <div>
-              <label className={labelCls}>O que você faz e o que vende?</label>
-              <p className="text-white/30 text-xs mb-2">Pode ser qualquer negócio — produto, serviço, presencial ou online.</p>
-              <input {...register("negocio")} placeholder="Ex: hamburgueria, consultoria financeira, loja de roupas..." className={inputCls} />
+              <h3 className="text-white text-xl sm:text-2xl font-display mb-2">O que você faz e o que vende?</h3>
+              <p className="text-white/40 text-sm mb-5">Pode ser qualquer negócio — produto, serviço, presencial ou online.</p>
+              <input
+                {...register("negocio")}
+                placeholder="Ex: hamburgueria, consultoria, loja de roupas..."
+                className={inputCls}
+                autoFocus
+              />
               {errors.negocio && <p className={errorCls}>{errors.negocio.message}</p>}
+
+              <button
+                type="button"
+                onClick={handleTextNext}
+                className="w-full bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-4 rounded-sm hover:opacity-90 transition-opacity mt-6"
+              >
+                Continuar →
+              </button>
             </div>
           )}
 
-          {/* ── SUB 1 — Segmento (página dedicada) ── */}
+          {/* SUB 1 — Segmento */}
           {sub === 1 && (
-            <div className="space-y-5">
-              {SEGMENTO_GRUPOS.map(grupo => (
-                <div key={grupo.cat}>
-                  <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[hsl(42_100%_55%)] mb-2">
-                    {grupo.cat}
-                  </p>
-                  <div className="flex flex-col gap-1">
-                    {grupo.itens.map(item => (
-                      <RadioCard
-                        key={item}
-                        label={item}
-                        selected={watched.segmento === item}
-                        onChange={() => setValue("segmento", item, { shouldValidate: true })}
-                      />
-                    ))}
+            <div>
+              <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual o segmento do seu negócio?</h3>
+              <p className="text-white/40 text-sm mb-5">Toque para selecionar.</p>
+
+              <div className="space-y-5">
+                {SEGMENTO_GRUPOS.map(grupo => (
+                  <div key={grupo.cat}>
+                    <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[hsl(42_100%_55%)] mb-2">
+                      {grupo.cat}
+                    </p>
+                    <div className="flex flex-col gap-1.5">
+                      {grupo.itens.map(item => (
+                        <Option
+                          key={item}
+                          label={item}
+                          selected={watched.segmento === item}
+                          onClick={() => pickAndAdvance("segmento", item)}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
               {errors.segmento && <p className={errorCls}>{errors.segmento.message}</p>}
             </div>
           )}
 
-          {/* ── SUB 2 — Seu momento ── */}
-          {sub === 2 && <>
+          {/* SUB 2 — Desafio */}
+          {sub === 2 && (
             <div>
-              <label className={labelCls}>Qual é o maior desafio no seu negócio agora?</label>
-              <div className="flex flex-col gap-2 mt-2">
+              <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual seu maior desafio agora?</h3>
+              <p className="text-white/40 text-sm mb-5">Toque na opção que mais combina com o seu momento.</p>
+              <div className="flex flex-col gap-2">
                 {["Atrair mais clientes", "Converter melhor os que chegam", "Estruturar e fortalecer a marca", "Crescer com consistência"].map(o => (
-                  <RadioCard key={o} label={o} selected={watched.desafio === o} onChange={() => setValue("desafio", o, { shouldValidate: true })} />
+                  <Option key={o} label={o} selected={watched.desafio === o} onClick={() => pickAndAdvance("desafio", o)} />
                 ))}
               </div>
               {errors.desafio && <p className={errorCls}>{errors.desafio.message}</p>}
             </div>
+          )}
 
+          {/* SUB 3 — Marketing anterior */}
+          {sub === 3 && (
             <div>
-              <label className={labelCls}>Você já investiu em marketing digital antes?</label>
-              <div className="flex flex-col gap-2 mt-2">
+              <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Você já investiu em marketing digital?</h3>
+              <p className="text-white/40 text-sm mb-5">Não tem certo ou errado — só ajuda a entender seu histórico.</p>
+              <div className="flex flex-col gap-2">
                 {["Sim, já investi", "Não, nunca investi"].map(o => (
-                  <RadioCard key={o} label={o} selected={watched.marketing_anterior === o} onChange={() => setValue("marketing_anterior", o, { shouldValidate: true })} />
+                  <Option key={o} label={o} selected={watched.marketing_anterior === o} onClick={() => pickAndAdvance("marketing_anterior", o)} />
                 ))}
               </div>
               {errors.marketing_anterior && <p className={errorCls}>{errors.marketing_anterior.message}</p>}
             </div>
-          </>}
+          )}
 
-          {/* ── SUB 3 — Seu plano ── */}
-          {sub === 3 && <>
+          {/* SUB 4 — Orçamento */}
+          {sub === 4 && (
             <div>
-              <label className={labelCls}>Qual é o orçamento mensal disponível para marketing?</label>
-              <div className="flex flex-col gap-2 mt-2">
+              <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual seu orçamento mensal para marketing?</h3>
+              <p className="text-white/40 text-sm mb-5">Quanto você consegue investir todo mês.</p>
+              <div className="flex flex-col gap-2">
                 {["Até R$1.500", "R$1.500 – R$3.000", "R$3.000 – R$6.000", "Acima de R$6.000"].map(o => (
-                  <RadioCard key={o} label={o} selected={watched.orcamento === o} onChange={() => setValue("orcamento", o, { shouldValidate: true })} />
+                  <Option key={o} label={o} selected={watched.orcamento === o} onClick={() => pickAndAdvance("orcamento", o)} />
                 ))}
               </div>
               {errors.orcamento && <p className={errorCls}>{errors.orcamento.message}</p>}
             </div>
+          )}
 
+          {/* SUB 5 — Quando começar */}
+          {sub === 5 && (
             <div>
-              <label className={labelCls}>Quando você quer começar?</label>
-              <p className="text-white/30 text-xs mb-2">Seja honesto — isso não elimina ninguém, só ajuda a gente a priorizar.</p>
+              <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Quando você quer começar?</h3>
+              <p className="text-white/40 text-sm mb-5">Seja honesto — isso não elimina ninguém, só ajuda a priorizar.</p>
               <div className="flex flex-col gap-2">
                 {["Agora — já decidi", "Em breve — estou avaliando", "Ainda pesquisando — sem prazo"].map(o => (
-                  <RadioCard key={o} label={o} selected={watched.quando_comecar === o} onChange={() => setValue("quando_comecar", o, { shouldValidate: true })} />
+                  <Option key={o} label={o} selected={watched.quando_comecar === o} onClick={() => pickAndAdvance("quando_comecar", o)} />
                 ))}
               </div>
               {errors.quando_comecar && <p className={errorCls}>{errors.quando_comecar.message}</p>}
             </div>
-          </>}
+          )}
 
         </motion.div>
       </AnimatePresence>
 
-      <div className="flex gap-3 pt-6">
-        {sub > 0 && (
-          <button
-            type="button"
-            onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setSub(s => s - 1); }}
-            className="flex-1 border border-white/15 text-white/50 font-bold text-xs tracking-widest uppercase py-4 rounded-sm hover:border-white/30 hover:text-white/70 transition-colors"
-          >
-            ← Voltar
-          </button>
-        )}
+      {/* Botão Voltar discreto no rodapé (só aparece após o primeiro sub-step) */}
+      {sub > 0 && (
         <button
           type="button"
-          onClick={handleSubNext}
-          className="flex-[2] bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-4 rounded-sm hover:opacity-90 transition-opacity"
+          onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setSub(s => s - 1); }}
+          className="text-white/40 text-xs tracking-widest uppercase mt-8 hover:text-white/70 transition-colors"
         >
-          Continuar →
+          ← Voltar
         </button>
-      </div>
+      )}
     </div>
   );
 }

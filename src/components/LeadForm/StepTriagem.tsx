@@ -35,16 +35,16 @@ function Option({ label, selected, onClick }: { label: string; selected: boolean
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-4 border text-left transition-all duration-150 active:scale-[0.99] ${
+      className={`w-full flex items-start gap-3 px-4 py-4 border text-left transition-all duration-150 active:scale-[0.99] overflow-visible ${
         selected
           ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.12)] text-white"
-          : "border-white/10 text-white/70 hover:border-white/30 hover:text-white"
+          : "border-white/10 text-white hover:border-white/30"
       }`}
     >
-      <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${
-        selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/30"
+      <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 mt-[2px] transition-all ${
+        selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/40"
       }`} />
-      <span className="text-[15px] sm:text-sm leading-tight">{label}</span>
+      <span className="flex-1 min-w-0 text-[15px] sm:text-sm leading-snug break-words">{label}</span>
     </button>
   );
 }
@@ -159,10 +159,10 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual o segmento do seu negócio?</h3>
               <p className="text-white/40 text-sm mb-5">Toque para selecionar.</p>
 
-              <div className="space-y-5">
+              <div className="space-y-6">
                 {SEGMENTO_GRUPOS.map(grupo => (
                   <div key={grupo.cat}>
-                    <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[hsl(42_100%_55%)] mb-2">
+                    <p className="text-xs font-semibold tracking-wide text-[hsl(42_100%_55%)] mb-2">
                       {grupo.cat}
                     </p>
                     <div className="flex flex-col gap-1.5">

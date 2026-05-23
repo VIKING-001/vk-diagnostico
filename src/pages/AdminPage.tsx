@@ -289,6 +289,134 @@ function ChangePasswordPanel() {
   );
 }
 
+// ── Tela de redefinição de senha ──────────────────────────────────────────
+function ForgotPasswordScreen({ onBack }: { onBack: () => void }) {
+  const [step, setStep] = useState<"send" | "reset" | "done">("send");
+  const [code, setCode] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [msg, setMsg] = useState("");
+
+  const inp = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
+
+  async function handleSend() {
+    setStatus("loading"); setMsg("");
+    const r = await fetch("/api/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "send" }),
+    });
+    const json = await r.json();
+    if (!r.ok) { setMsg(json.error ?? "Erro ao enviar."); setStatus("error"); return; }
+    setStatus("idle");
+    setStep("reset");
+  }
+
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg("");
+    if (newPass.length < 6) { setMsg("A senha precisa ter pelo menos 6 caracteres."); setStatus("error"); return; }
+    if (newPass !== confirmPass) { setMsg("As senhas não coincidem."); setStatus("error"); return; }
+    setStatus("loading");
+    const r = await fetch("/api/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "reset", code, newPassword: newPass }),
+    });
+    const json = await r.json();
+    if (!r.ok) { setMsg(json.error ?? "Erro ao redefinir."); setStatus("error"); return; }
+    setStatus("idle");
+    setStep("done");
+  }
+
+  return (
+    <div className="min-h-screen bg-[hsl(222_47%_2%)] text-white flex items-center justify-center px-6">
+      <div className="w-full max-w-sm space-y-6">
+        <div>
+          <p className="font-display text-3xl text-[hsl(42_100%_55%)]">VK COMPANY</p>
+          <p className="text-xs text-white/30 tracking-widest uppercase mt-1">Redefinir senha</p>
+        </div>
+
+        {step === "send" && (
+          <div className="space-y-4">
+            <p className="text-sm text-white/50 leading-relaxed">
+              Vamos enviar um código de 6 dígitos para o seu e-mail cadastrado.<br />
+              Válido por 15 minutos.
+            </p>
+            {msg && <p className="text-red-400 text-xs">{msg}</p>}
+            <button
+              onClick={handleSend}
+              disabled={status === "loading"}
+              className="w-full bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-3 rounded-sm hover:opacity-90 disabled:opacity-50"
+            >
+              {status === "loading" ? "Enviando..." : "Enviar código por e-mail"}
+            </button>
+            <button onClick={onBack} className="w-full text-white/30 text-xs tracking-widest uppercase hover:text-white/60 transition-colors py-1">
+              ← Voltar ao login
+            </button>
+          </div>
+        )}
+
+        {step === "reset" && (
+          <form onSubmit={handleReset} className="space-y-4">
+            <p className="text-sm text-white/50">Código enviado! Verifique seu e-mail e insira abaixo.</p>
+            <input
+              placeholder="Código de 6 dígitos"
+              value={code}
+              onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              className={inp}
+              inputMode="numeric"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Nova senha (mín. 6 caracteres)"
+              value={newPass}
+              onChange={e => setNewPass(e.target.value)}
+              className={inp}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Confirmar nova senha"
+              value={confirmPass}
+              onChange={e => setConfirmPass(e.target.value)}
+              className={inp}
+              required
+            />
+            {msg && <p className="text-red-400 text-xs">{msg}</p>}
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="w-full bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-3 rounded-sm hover:opacity-90 disabled:opacity-50"
+            >
+              {status === "loading" ? "Redefinindo..." : "Redefinir senha"}
+            </button>
+            <button type="button" onClick={() => setStep("send")} className="w-full text-white/30 text-xs tracking-widest uppercase hover:text-white/60 transition-colors py-1">
+              ← Reenviar código
+            </button>
+          </form>
+        )}
+
+        {step === "done" && (
+          <div className="space-y-4 text-center">
+            <p className="text-4xl">✓</p>
+            <p className="text-white font-bold">Senha redefinida com sucesso!</p>
+            <p className="text-sm text-white/40">Agora você pode entrar com a nova senha.</p>
+            <button
+              onClick={onBack}
+              className="w-full bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-3 rounded-sm hover:opacity-90"
+            >
+              Ir para o login
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Página principal ───────────────────────────────────────────────────────
 export function AdminPage() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem(SESSION_KEY) === "1");
@@ -299,6 +427,7 @@ export function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<"all" | "qualified" | "unqualified">("all");
   const [showSettings, setShowSettings] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   useEffect(() => {
     if (!authed) return;
@@ -311,9 +440,8 @@ export function AdminPage() {
     e.preventDefault();
     setError(false);
 
-    // Busca senha salva no Supabase
     const { data } = await supabase.from("config").select("value").eq("key", "admin_password").single();
-    const savedPass = data?.value ?? "vk@admin2024"; // fallback caso tabela não exista
+    const savedPass = data?.value ?? "vk@admin2024";
 
     if (pass === savedPass) {
       sessionStorage.setItem(SESSION_KEY, "1");
@@ -330,6 +458,10 @@ export function AdminPage() {
     setAuthed(false);
     setLeads([]);
     setShowSettings(false);
+  }
+
+  if (showForgot) {
+    return <ForgotPasswordScreen onBack={() => setShowForgot(false)} />;
   }
 
   if (!authed) {
@@ -349,6 +481,13 @@ export function AdminPage() {
           {error && <p className="text-red-400 text-xs">{errorMsg}</p>}
           <button type="submit" className="w-full bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-3 rounded-sm hover:opacity-90">
             Entrar
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowForgot(true)}
+            className="w-full text-white/30 text-xs tracking-widest uppercase hover:text-white/60 transition-colors py-1"
+          >
+            Esqueci minha senha
           </button>
         </form>
       </div>

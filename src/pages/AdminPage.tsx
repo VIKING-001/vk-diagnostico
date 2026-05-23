@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
-const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASSWORD ?? "vk@admin2024";
 const SESSION_KEY = "vk_admin_auth";
 
 const TIPO_LABELS: Record<string, string> = {
@@ -127,7 +126,6 @@ function LeadCard({ lead }: { lead: Lead }) {
 
       {open && (
         <div className="px-5 pb-5 border-t border-white/5 pt-4 space-y-4">
-          {/* Contato */}
           <div className="space-y-3">
             <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
               <span className="text-white/35">Nome completo</span>
@@ -170,7 +168,6 @@ function LeadCard({ lead }: { lead: Lead }) {
             </div>
           </div>
 
-          {/* Triagem */}
           <div>
             <p className="text-[0.55rem] tracking-widest uppercase text-white/25 mb-2">Triagem</p>
             <div className="space-y-2">
@@ -183,7 +180,6 @@ function LeadCard({ lead }: { lead: Lead }) {
             </div>
           </div>
 
-          {/* Diagnóstico */}
           {lead.qualificado && (
             <div>
               <p className="text-[0.55rem] tracking-widest uppercase text-white/25 mb-2">Diagnóstico estratégico</p>
@@ -205,13 +201,104 @@ function LeadCard({ lead }: { lead: Lead }) {
   );
 }
 
+// ── Painel de alterar senha ────────────────────────────────────────────────
+function ChangePasswordPanel() {
+  const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [msg, setMsg] = useState("");
+
+  async function handleChange(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg("");
+    if (next.length < 6) { setMsg("A nova senha precisa ter pelo menos 6 caracteres."); setStatus("error"); return; }
+    if (next !== confirm) { setMsg("As senhas não coincidem."); setStatus("error"); return; }
+
+    setStatus("loading");
+    // Verifica senha atual no Supabase
+    const { data } = await supabase.from("config").select("value").eq("key", "admin_password").single();
+    if (!data || data.value !== current) {
+      setMsg("Senha atual incorreta."); setStatus("error"); return;
+    }
+    // Salva nova senha
+    const { error } = await supabase.from("config").update({ value: next }).eq("key", "admin_password");
+    if (error) { setMsg("Erro ao salvar. Tente novamente."); setStatus("error"); return; }
+
+    setStatus("ok");
+    setMsg("Senha alterada com sucesso!");
+    setCurrent(""); setNext(""); setConfirm("");
+    setTimeout(() => { setOpen(false); setStatus("idle"); setMsg(""); }, 2000);
+  }
+
+  const inp = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
+
+  return (
+    <div className="border border-white/8 bg-white/2 rounded-sm">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/3 transition-colors"
+      >
+        <div>
+          <p className="text-sm font-bold text-white">🔑 Alterar senha do painel</p>
+          <p className="text-xs text-white/30 mt-0.5">Mude sua senha de acesso sem precisar de ajuda técnica.</p>
+        </div>
+        <span className="text-white/30 text-xs">{open ? "▲" : "▼"}</span>
+      </button>
+
+      {open && (
+        <form onSubmit={handleChange} className="px-5 pb-5 border-t border-white/5 pt-4 space-y-3">
+          <input
+            type="password"
+            placeholder="Senha atual"
+            value={current}
+            onChange={e => setCurrent(e.target.value)}
+            className={inp}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Nova senha (mín. 6 caracteres)"
+            value={next}
+            onChange={e => setNext(e.target.value)}
+            className={inp}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Confirmar nova senha"
+            value={confirm}
+            onChange={e => setConfirm(e.target.value)}
+            className={inp}
+            required
+          />
+          {msg && (
+            <p className={`text-xs ${status === "ok" ? "text-green-400" : "text-red-400"}`}>{msg}</p>
+          )}
+          <button
+            type="submit"
+            disabled={status === "loading" || status === "ok"}
+            className="w-full bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-xs tracking-widest uppercase py-3 rounded-sm hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {status === "loading" ? "Salvando..." : status === "ok" ? "✓ Senha alterada!" : "Salvar nova senha"}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+// ── Página principal ───────────────────────────────────────────────────────
 export function AdminPage() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem(SESSION_KEY) === "1");
   const [pass, setPass] = useState("");
   const [error, setError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("Senha incorreta.");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<"all" | "qualified" | "unqualified">("all");
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (!authed) return;
@@ -220,12 +307,19 @@ export function AdminPage() {
       .then(({ data }) => { setLeads((data as Lead[]) ?? []); setLoading(false); });
   }, [authed]);
 
-  function login(e: React.FormEvent) {
+  async function login(e: React.FormEvent) {
     e.preventDefault();
-    if (pass === ADMIN_PASS) {
+    setError(false);
+
+    // Busca senha salva no Supabase
+    const { data } = await supabase.from("config").select("value").eq("key", "admin_password").single();
+    const savedPass = data?.value ?? "vk@admin2024"; // fallback caso tabela não exista
+
+    if (pass === savedPass) {
       sessionStorage.setItem(SESSION_KEY, "1");
       setAuthed(true);
     } else {
+      setErrorMsg("Senha incorreta.");
       setError(true);
       setTimeout(() => setError(false), 2000);
     }
@@ -235,6 +329,7 @@ export function AdminPage() {
     sessionStorage.removeItem(SESSION_KEY);
     setAuthed(false);
     setLeads([]);
+    setShowSettings(false);
   }
 
   if (!authed) {
@@ -251,7 +346,7 @@ export function AdminPage() {
             className={`w-full bg-white/5 border ${error ? "border-red-500/60" : "border-white/10"} text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm`}
             autoFocus
           />
-          {error && <p className="text-red-400 text-xs">Senha incorreta.</p>}
+          {error && <p className="text-red-400 text-xs">{errorMsg}</p>}
           <button type="submit" className="w-full bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-3 rounded-sm hover:opacity-90">
             Entrar
           </button>
@@ -264,19 +359,35 @@ export function AdminPage() {
   const unqualified = leads.filter(l => !l.qualificado);
   const today = leads.filter(l => isToday(l.created_at));
   const rate = leads.length ? Math.round((qualified.length / leads.length) * 100) : 0;
-
   const filtered = filter === "qualified" ? qualified : filter === "unqualified" ? unqualified : leads;
 
   return (
     <div className="min-h-screen bg-[hsl(222_47%_2%)] text-white">
       <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
         <span className="font-display text-xl text-[hsl(42_100%_55%)] tracking-wider">VK COMPANY — Admin</span>
-        <button onClick={logout} className="text-[0.68rem] tracking-[0.18em] uppercase text-white/30 hover:text-white/60 transition-colors">
-          Sair
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setShowSettings(s => !s)}
+            className="text-[0.68rem] tracking-[0.18em] uppercase text-white/30 hover:text-white/60 transition-colors"
+          >
+            ⚙ Configurações
+          </button>
+          <button onClick={logout} className="text-[0.68rem] tracking-[0.18em] uppercase text-white/30 hover:text-white/60 transition-colors">
+            Sair
+          </button>
+        </div>
       </header>
 
       <main className="px-6 py-10 max-w-5xl mx-auto space-y-8">
+
+        {/* Configurações */}
+        {showSettings && (
+          <div className="space-y-3">
+            <p className="text-[0.6rem] tracking-widest uppercase text-white/25">Configurações</p>
+            <ChangePasswordPanel />
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard label="Total de leads" value={leads.length} />

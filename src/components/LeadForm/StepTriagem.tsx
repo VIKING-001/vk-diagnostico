@@ -18,7 +18,17 @@ type TriagemData = z.infer<typeof schema>;
 const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
 const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-1";
 const labelCls = "block text-white/80 text-sm mb-2";
-const catCls   = "text-[0.6rem] tracking-[0.18em] uppercase text-[hsl(42_100%_55%)] mt-3 mb-1 col-span-2";
+
+const SEGMENTO_GRUPOS = [
+  { cat: "🍔 Alimentação",           itens: ["Restaurante / Lanchonete", "Delivery / Dark Kitchen", "Bar / Churrascaria / Buffet", "Confeitaria / Padaria / Café"] },
+  { cat: "🏥 Saúde & Bem-estar",     itens: ["Clínica Médica / Hospital", "Odontologia", "Psicologia / Terapia", "Estética / Beleza / Salão", "Academia / Personal Trainer", "Farmácia / Suplementos", "Nutrição / Bem-estar"] },
+  { cat: "📚 Educação",              itens: ["Escola / Curso Presencial", "Curso Online / Infoproduto", "Coaching / Mentoria"] },
+  { cat: "🛍️ Comércio & Varejo",    itens: ["Varejo Físico (loja)", "E-commerce", "Moda / Roupas / Acessórios", "Pet Shop / Veterinário", "Automotivo / Veículos"] },
+  { cat: "🏠 Imóveis & Construção",  itens: ["Imobiliária / Corretor", "Construção / Incorporadora", "Arquitetura / Design de Interiores", "Reforma / Acabamento"] },
+  { cat: "⚖️ Profissionais Liberais", itens: ["Advocacia / Direito", "Contabilidade / Financeiro", "Consultoria Empresarial", "Engenharia / Projetos"] },
+  { cat: "💻 Tecnologia & Digital",  itens: ["Tecnologia / SaaS / Software", "Agência / Marketing Digital", "Freelancer / Criador de Conteúdo"] },
+  { cat: "🚀 Outros",                itens: ["Segurança / Vigilância", "Logística / Transporte / Frete", "Turismo / Hotelaria / Viagem", "Eventos / Casamentos / Formaturas", "Energia Solar", "Franquia", "Indústria / Manufatura", "Outro"] },
+];
 
 function RadioCard({ label, selected, onChange }: { label: string; selected: boolean; onChange: () => void }) {
   return (
@@ -32,16 +42,59 @@ function RadioCard({ label, selected, onChange }: { label: string; selected: boo
   );
 }
 
-const SEGMENTO_GRUPOS = [
-  { cat: "🍔 Alimentação",        itens: ["Restaurante / Lanchonete", "Delivery / Dark Kitchen", "Bar / Churrascaria / Buffet", "Confeitaria / Padaria / Café"] },
-  { cat: "🏥 Saúde & Bem-estar",  itens: ["Clínica Médica / Hospital", "Odontologia", "Psicologia / Terapia", "Estética / Beleza / Salão", "Academia / Personal Trainer / Pilates", "Farmácia / Suplementos", "Nutrição / Bem-estar"] },
-  { cat: "📚 Educação",           itens: ["Escola / Curso Presencial", "Curso Online / Infoproduto", "Coaching / Mentoria"] },
-  { cat: "🛍️ Comércio & Varejo", itens: ["Varejo Físico (loja)", "E-commerce", "Moda / Roupas / Acessórios", "Pet Shop / Veterinário", "Automotivo / Veículos"] },
-  { cat: "🏠 Imóveis & Construção", itens: ["Imobiliária / Corretor", "Construção / Incorporadora", "Arquitetura / Design de Interiores", "Reforma / Acabamento"] },
-  { cat: "⚖️ Profissionais Liberais", itens: ["Advocacia / Direito", "Contabilidade / Financeiro", "Consultoria Empresarial", "Engenharia / Projetos"] },
-  { cat: "💻 Tecnologia & Digital", itens: ["Tecnologia / SaaS / Software", "Agência / Marketing Digital", "Freelancer / Criador de Conteúdo"] },
-  { cat: "🚀 Outros",             itens: ["Segurança / Vigilância", "Logística / Transporte / Frete", "Turismo / Hotelaria / Viagem", "Eventos / Casamentos / Formaturas", "Energia Solar", "Franquia", "Indústria / Manufatura", "Outro"] },
-];
+function SegmentoSelector({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: string }) {
+  const [catSelecionada, setCatSelecionada] = useState<string | null>(
+    () => SEGMENTO_GRUPOS.find(g => g.itens.includes(value))?.cat ?? null
+  );
+
+  const grupo = SEGMENTO_GRUPOS.find(g => g.cat === catSelecionada);
+
+  return (
+    <div className="space-y-3">
+      {/* Nível 1 — Categorias */}
+      <div className="grid grid-cols-2 gap-2">
+        {SEGMENTO_GRUPOS.map(g => {
+          const ativa = catSelecionada === g.cat;
+          return (
+            <button
+              key={g.cat}
+              type="button"
+              onClick={() => { setCatSelecionada(g.cat); if (!g.itens.includes(value)) onChange(""); }}
+              className={`text-left px-3 py-2.5 border text-xs transition-all duration-150 ${
+                ativa ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.1)] text-white" : "border-white/10 text-white/40 hover:border-white/25 hover:text-white/70"
+              }`}
+            >
+              {g.cat}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Nível 2 — Opções da categoria selecionada */}
+      <AnimatePresence mode="wait">
+        {grupo && (
+          <motion.div
+            key={grupo.cat}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            className="grid grid-cols-1 gap-1.5 pl-1 border-l-2 border-[hsl(42_100%_55%/0.3)]"
+          >
+            {grupo.itens.map(item => (
+              <RadioCard key={item} label={item} selected={value === item} onChange={() => onChange(item)} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {value && (
+        <p className="text-[hsl(42_100%_55%)] text-xs">✓ {value}</p>
+      )}
+      {error && <p className="text-[hsl(42_100%_55%)] text-xs">{error}</p>}
+    </div>
+  );
+}
 
 const SUB_STEPS = 3;
 const fieldsPerSub: (keyof TriagemData)[][] = [
@@ -102,23 +155,18 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
             <div>
               <label className={labelCls}>O que você faz e o que vende?</label>
               <p className="text-white/30 text-xs mb-2">Pode ser qualquer negócio — produto, serviço, presencial ou online.</p>
-              <input {...register("negocio")} placeholder="Ex: Tenho uma hamburgueria, sou consultor financeiro..." className={inputCls} />
+              <input {...register("negocio")} placeholder="Ex: hamburgueria, consultoria financeira, loja de roupas..." className={inputCls} />
               {errors.negocio && <p className={errorCls}>{errors.negocio.message}</p>}
             </div>
 
             <div>
               <label className={labelCls}>Qual é o segmento do seu negócio?</label>
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                {SEGMENTO_GRUPOS.map(grupo => (
-                  <div key={grupo.cat} className="contents">
-                    <p className={catCls}>{grupo.cat}</p>
-                    {grupo.itens.map(item => (
-                      <RadioCard key={item} label={item} selected={watched.segmento === item} onChange={() => setValue("segmento", item, { shouldValidate: true })} />
-                    ))}
-                  </div>
-                ))}
-              </div>
-              {errors.segmento && <p className={errorCls}>{errors.segmento.message}</p>}
+              <p className="text-white/30 text-xs mb-3">Selecione a categoria e depois o tipo específico.</p>
+              <SegmentoSelector
+                value={watched.segmento}
+                onChange={(v) => setValue("segmento", v, { shouldValidate: true })}
+                error={errors.segmento?.message}
+              />
             </div>
           </>}
 
@@ -175,13 +223,13 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
       <div className="flex gap-3 pt-4">
         {sub > 0 && (
           <button type="button" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setSub(sub - 1); }}
-            className="flex-1 border border-white/15 text-white/50 font-bold text-xs tracking-widest uppercase py-4 rounded-sm hover:border-white/30 hover:text-white/70 transition-colors duration-200">
+            className="flex-1 border border-white/15 text-white/50 font-bold text-xs tracking-widest uppercase py-4 rounded-sm hover:border-white/30 hover:text-white/70 transition-colors">
             ← Voltar
           </button>
         )}
         <button type="button" onClick={handleSubNext}
-          className="flex-[2] bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-4 rounded-sm hover:opacity-90 transition-opacity duration-200">
-          {sub === SUB_STEPS - 1 ? "Continuar →" : "Continuar →"}
+          className="flex-[2] bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-4 rounded-sm hover:opacity-90 transition-opacity">
+          Continuar →
         </button>
       </div>
     </div>

@@ -31,10 +31,52 @@ function RadioCard({ value, label, selected, onChange }: { value: string; label:
 }
 
 const SEGMENTOS = [
-  "Serviço", "Varejo", "Food Service / Restaurante", "E-commerce",
-  "Educação", "Saúde / Estética / Beleza", "Imobiliária",
-  "Finanças / Contabilidade", "Construção / Reforma",
-  "Agência / Marketing", "Tecnologia / SaaS", "Indústria", "Outro",
+  // Alimentação
+  "Restaurante / Lanchonete",
+  "Delivery / Dark Kitchen",
+  "Bar / Churrascaria / Buffet",
+  "Confeitaria / Padaria / Café",
+  // Saúde & Bem-estar
+  "Clínica Médica / Hospital",
+  "Odontologia",
+  "Psicologia / Terapia",
+  "Estética / Beleza / Salão",
+  "Academia / Personal Trainer / Pilates",
+  "Farmácia / Suplementos",
+  "Nutrição / Bem-estar",
+  // Educação
+  "Escola / Curso Presencial",
+  "Curso Online / Infoproduto",
+  "Coaching / Mentoria",
+  // Comércio & Varejo
+  "Varejo Físico (loja)",
+  "E-commerce",
+  "Moda / Roupas / Acessórios",
+  "Pet Shop / Veterinário",
+  "Automotivo / Veículos",
+  // Imóveis & Construção
+  "Imobiliária / Corretor",
+  "Construção / Incorporadora",
+  "Arquitetura / Design de Interiores",
+  "Reforma / Acabamento",
+  // Profissionais Liberais & Jurídico
+  "Advocacia / Direito",
+  "Contabilidade / Financeiro",
+  "Consultoria Empresarial",
+  "Engenharia / Projetos",
+  // Tecnologia & Digital
+  "Tecnologia / SaaS / Software",
+  "Agência / Marketing Digital",
+  "Freelancer / Criador de Conteúdo",
+  // Outros Serviços
+  "Segurança / Vigilância",
+  "Logística / Transporte / Frete",
+  "Turismo / Hotelaria / Viagem",
+  "Eventos / Casamentos / Formaturas",
+  "Energia Solar",
+  "Franquia",
+  "Indústria / Manufatura",
+  "Outro",
 ];
 
 interface Props {

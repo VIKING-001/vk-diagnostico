@@ -20,89 +20,69 @@ const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-1";
 const labelCls = "block text-white/80 text-sm mb-2";
 
 const SEGMENTO_GRUPOS = [
-  { cat: "🍔 Alimentação",           itens: ["Restaurante / Lanchonete", "Delivery / Dark Kitchen", "Bar / Churrascaria / Buffet", "Confeitaria / Padaria / Café"] },
-  { cat: "🏥 Saúde & Bem-estar",     itens: ["Clínica Médica / Hospital", "Odontologia", "Psicologia / Terapia", "Estética / Beleza / Salão", "Academia / Personal Trainer", "Farmácia / Suplementos", "Nutrição / Bem-estar"] },
-  { cat: "📚 Educação",              itens: ["Escola / Curso Presencial", "Curso Online / Infoproduto", "Coaching / Mentoria"] },
-  { cat: "🛍️ Comércio & Varejo",    itens: ["Varejo Físico (loja)", "E-commerce", "Moda / Roupas / Acessórios", "Pet Shop / Veterinário", "Automotivo / Veículos"] },
-  { cat: "🏠 Imóveis & Construção",  itens: ["Imobiliária / Corretor", "Construção / Incorporadora", "Arquitetura / Design de Interiores", "Reforma / Acabamento"] },
-  { cat: "⚖️ Profissionais Liberais", itens: ["Advocacia / Direito", "Contabilidade / Financeiro", "Consultoria Empresarial", "Engenharia / Projetos"] },
-  { cat: "💻 Tecnologia & Digital",  itens: ["Tecnologia / SaaS / Software", "Agência / Marketing Digital", "Freelancer / Criador de Conteúdo"] },
-  { cat: "🚀 Outros",                itens: ["Segurança / Vigilância", "Logística / Transporte / Frete", "Turismo / Hotelaria / Viagem", "Eventos / Casamentos / Formaturas", "Energia Solar", "Franquia", "Indústria / Manufatura", "Outro"] },
+  {
+    cat: "🍔 Alimentação",
+    itens: ["Restaurante", "Lanchonete", "Delivery", "Bar e Boteco", "Churrascaria", "Buffet", "Padaria", "Confeitaria", "Café"],
+  },
+  {
+    cat: "🏥 Saúde e Bem-estar",
+    itens: ["Clínica Médica", "Odontologia", "Psicologia", "Estética", "Salão de Beleza", "Academia", "Personal Trainer", "Pilates", "Farmácia", "Nutrição"],
+  },
+  {
+    cat: "📚 Educação",
+    itens: ["Escola", "Curso Presencial", "Curso Online", "Infoproduto", "Coaching", "Mentoria"],
+  },
+  {
+    cat: "🛍️ Comércio e Varejo",
+    itens: ["Loja Física", "E-commerce", "Moda e Vestuário", "Calçados", "Pet Shop", "Veterinário", "Loja de Veículos", "Loja de Eletrônicos"],
+  },
+  {
+    cat: "🏠 Imóveis e Construção",
+    itens: ["Imobiliária", "Corretor de Imóveis", "Construtora", "Incorporadora", "Arquitetura", "Design de Interiores", "Reforma", "Engenharia"],
+  },
+  {
+    cat: "⚖️ Profissionais Liberais",
+    itens: ["Advocacia", "Contabilidade", "Consultoria Empresarial", "Recursos Humanos", "Psicólogo Liberal", "Médico Liberal"],
+  },
+  {
+    cat: "💻 Tecnologia e Digital",
+    itens: ["Software e SaaS", "Agência de Marketing", "Desenvolvimento Web", "Freelancer", "Criador de Conteúdo", "Influenciador Digital"],
+  },
+  {
+    cat: "🚀 Outros",
+    itens: ["Segurança e Vigilância", "Logística", "Transportadora", "Turismo", "Hotelaria e Pousada", "Eventos e Casamentos", "Energia Solar", "Franquia", "Indústria", "Agronegócio", "Outro"],
+  },
 ];
 
 function RadioCard({ label, selected, onChange }: { label: string; selected: boolean; onChange: () => void }) {
   return (
-    <label className={`flex items-center gap-3 p-3 border cursor-pointer transition-all duration-150 ${
-      selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.1)] text-white" : "border-white/10 text-white/50 hover:border-white/25"
+    <label className={`flex items-center gap-3 px-4 py-3 border cursor-pointer transition-all duration-150 ${
+      selected
+        ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.1)] text-white"
+        : "border-white/10 text-white/60 hover:border-white/30 hover:text-white/80"
     }`}>
       <input type="radio" checked={selected} onChange={onChange} className="sr-only" />
-      <span className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/30"}`} />
-      <span className="text-sm leading-tight">{label}</span>
+      <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${
+        selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/30"
+      }`} />
+      <span className="text-sm">{label}</span>
     </label>
   );
 }
 
-function SegmentoSelector({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: string }) {
-  const [catSelecionada, setCatSelecionada] = useState<string | null>(
-    () => SEGMENTO_GRUPOS.find(g => g.itens.includes(value))?.cat ?? null
-  );
-
-  const grupo = SEGMENTO_GRUPOS.find(g => g.cat === catSelecionada);
-
-  return (
-    <div className="space-y-3">
-      {/* Nível 1 — Categorias */}
-      <div className="grid grid-cols-2 gap-2">
-        {SEGMENTO_GRUPOS.map(g => {
-          const ativa = catSelecionada === g.cat;
-          return (
-            <button
-              key={g.cat}
-              type="button"
-              onClick={() => { setCatSelecionada(g.cat); if (!g.itens.includes(value)) onChange(""); }}
-              className={`text-left px-3 py-2.5 border text-xs transition-all duration-150 ${
-                ativa ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.1)] text-white" : "border-white/10 text-white/40 hover:border-white/25 hover:text-white/70"
-              }`}
-            >
-              {g.cat}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Nível 2 — Opções da categoria selecionada */}
-      <AnimatePresence mode="wait">
-        {grupo && (
-          <motion.div
-            key={grupo.cat}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.18 }}
-            className="grid grid-cols-1 gap-1.5 pl-1 border-l-2 border-[hsl(42_100%_55%/0.3)]"
-          >
-            {grupo.itens.map(item => (
-              <RadioCard key={item} label={item} selected={value === item} onChange={() => onChange(item)} />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {value && (
-        <p className="text-[hsl(42_100%_55%)] text-xs">✓ {value}</p>
-      )}
-      {error && <p className="text-[hsl(42_100%_55%)] text-xs">{error}</p>}
-    </div>
-  );
-}
-
-const SUB_STEPS = 3;
+// ── SUB-STEPS ──────────────────────────────────────────────────────────────
+// 0: O que faz
+// 1: Segmento (página dedicada)
+// 2: Desafio + Marketing anterior
+// 3: Orçamento + Quando começar
+const SUB_STEPS = 4;
 const fieldsPerSub: (keyof TriagemData)[][] = [
-  ["negocio", "segmento"],
+  ["negocio"],
+  ["segmento"],
   ["desafio", "marketing_anterior"],
   ["orcamento", "quando_comecar"],
 ];
-const subTitles = ["Seu negócio", "Seu momento", "Seu plano"];
+const subTitles = ["Seu negócio", "Seu segmento", "Seu momento", "Seu plano"];
 
 interface Props {
   defaultValues: Partial<TriagemData>;
@@ -125,7 +105,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
     if (!valid) return;
     if (sub < SUB_STEPS - 1) {
       window.scrollTo({ top: 0, behavior: "smooth" });
-      setSub(sub + 1);
+      setSub(s => s + 1);
     } else {
       handleSubmit((data) => {
         const qualificado = !(data.quando_comecar === "Ainda pesquisando — sem prazo" && data.orcamento === "Até R$1.500");
@@ -146,35 +126,49 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -30 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.22 }}
           className="space-y-6"
         >
 
-          {/* ── PARTE 1 — Seu negócio ── */}
-          {sub === 0 && <>
+          {/* ── SUB 0 — O que faz ── */}
+          {sub === 0 && (
             <div>
               <label className={labelCls}>O que você faz e o que vende?</label>
               <p className="text-white/30 text-xs mb-2">Pode ser qualquer negócio — produto, serviço, presencial ou online.</p>
               <input {...register("negocio")} placeholder="Ex: hamburgueria, consultoria financeira, loja de roupas..." className={inputCls} />
               {errors.negocio && <p className={errorCls}>{errors.negocio.message}</p>}
             </div>
+          )}
 
-            <div>
-              <label className={labelCls}>Qual é o segmento do seu negócio?</label>
-              <p className="text-white/30 text-xs mb-3">Selecione a categoria e depois o tipo específico.</p>
-              <SegmentoSelector
-                value={watched.segmento}
-                onChange={(v) => setValue("segmento", v, { shouldValidate: true })}
-                error={errors.segmento?.message}
-              />
+          {/* ── SUB 1 — Segmento (página dedicada) ── */}
+          {sub === 1 && (
+            <div className="space-y-5">
+              {SEGMENTO_GRUPOS.map(grupo => (
+                <div key={grupo.cat}>
+                  <p className="text-[0.6rem] tracking-[0.18em] uppercase text-[hsl(42_100%_55%)] mb-2">
+                    {grupo.cat}
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    {grupo.itens.map(item => (
+                      <RadioCard
+                        key={item}
+                        label={item}
+                        selected={watched.segmento === item}
+                        onChange={() => setValue("segmento", item, { shouldValidate: true })}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {errors.segmento && <p className={errorCls}>{errors.segmento.message}</p>}
             </div>
-          </>}
+          )}
 
-          {/* ── PARTE 2 — Seu momento ── */}
-          {sub === 1 && <>
+          {/* ── SUB 2 — Seu momento ── */}
+          {sub === 2 && <>
             <div>
               <label className={labelCls}>Qual é o maior desafio no seu negócio agora?</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-2">
                 {["Atrair mais clientes", "Converter melhor os que chegam", "Estruturar e fortalecer a marca", "Crescer com consistência"].map(o => (
                   <RadioCard key={o} label={o} selected={watched.desafio === o} onChange={() => setValue("desafio", o, { shouldValidate: true })} />
                 ))}
@@ -184,7 +178,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
 
             <div>
               <label className={labelCls}>Você já investiu em marketing digital antes?</label>
-              <div className="flex flex-col sm:flex-row gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-2">
                 {["Sim, já investi", "Não, nunca investi"].map(o => (
                   <RadioCard key={o} label={o} selected={watched.marketing_anterior === o} onChange={() => setValue("marketing_anterior", o, { shouldValidate: true })} />
                 ))}
@@ -193,11 +187,11 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
             </div>
           </>}
 
-          {/* ── PARTE 3 — Seu plano ── */}
-          {sub === 2 && <>
+          {/* ── SUB 3 — Seu plano ── */}
+          {sub === 3 && <>
             <div>
               <label className={labelCls}>Qual é o orçamento mensal disponível para marketing?</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-2">
                 {["Até R$1.500", "R$1.500 – R$3.000", "R$3.000 – R$6.000", "Acima de R$6.000"].map(o => (
                   <RadioCard key={o} label={o} selected={watched.orcamento === o} onChange={() => setValue("orcamento", o, { shouldValidate: true })} />
                 ))}
@@ -220,15 +214,21 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
         </motion.div>
       </AnimatePresence>
 
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-3 pt-6">
         {sub > 0 && (
-          <button type="button" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setSub(sub - 1); }}
-            className="flex-1 border border-white/15 text-white/50 font-bold text-xs tracking-widest uppercase py-4 rounded-sm hover:border-white/30 hover:text-white/70 transition-colors">
+          <button
+            type="button"
+            onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setSub(s => s - 1); }}
+            className="flex-1 border border-white/15 text-white/50 font-bold text-xs tracking-widest uppercase py-4 rounded-sm hover:border-white/30 hover:text-white/70 transition-colors"
+          >
             ← Voltar
           </button>
         )}
-        <button type="button" onClick={handleSubNext}
-          className="flex-[2] bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-4 rounded-sm hover:opacity-90 transition-opacity">
+        <button
+          type="button"
+          onClick={handleSubNext}
+          className="flex-[2] bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-4 rounded-sm hover:opacity-90 transition-opacity"
+        >
           Continuar →
         </button>
       </div>

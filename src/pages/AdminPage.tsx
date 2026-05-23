@@ -19,8 +19,11 @@ interface Lead {
   empresa: string;
   whatsapp: string;
   email: string;
+  instagram?: string;
+  cargo: string;
   qualificado: boolean;
   negocio: string;
+  segmento: string;
   tipo_negocio: string;
   desafio: string;
   marketing_anterior: string;
@@ -57,12 +60,13 @@ function isToday(iso: string) {
 
 const FIELD_LABELS: Record<string, string> = {
   negocio: "Negócio / o que vende",
+  segmento: "Segmento",
   desafio: "Maior desafio",
   marketing_anterior: "Já investiu em marketing",
   orcamento: "Orçamento mensal",
   quando_comecar: "Quando quer começar",
   tempo_mercado: "Tempo no mercado",
-  procedimentos_mes: "Clientes/projetos por mês",
+  procedimentos_mes: "Faturamento mensal",
   ticket_medio: "Ticket médio",
   retorno_cliente: "Taxa de retorno de clientes",
   fonte_clientes: "Principal fonte de clientes",
@@ -91,8 +95,8 @@ function LeadCard({ lead }: { lead: Lead }) {
   const [open, setOpen] = useState(false);
   const waLink = `https://wa.me/55${lead.whatsapp?.replace(/\D/g, "")}`;
 
-  const diagFields = Object.keys(FIELD_LABELS).filter(k => k !== "negocio" && k !== "desafio" && k !== "marketing_anterior" && k !== "orcamento" && k !== "quando_comecar");
-  const triagemFields = ["negocio", "desafio", "marketing_anterior", "orcamento", "quando_comecar"];
+  const diagFields = Object.keys(FIELD_LABELS).filter(k => !["negocio","segmento","desafio","marketing_anterior","orcamento","quando_comecar"].includes(k));
+  const triagemFields = ["negocio", "segmento", "desafio", "marketing_anterior", "orcamento", "quando_comecar"];
 
   return (
     <div className={`border ${lead.qualificado ? "border-[hsl(42_100%_55%/0.3)]" : "border-white/8"} bg-white/2 transition-all`}>
@@ -141,6 +145,19 @@ function LeadCard({ lead }: { lead: Lead }) {
               <span className="text-white/35">Empresa</span>
               <span className="text-white/80">{lead.empresa}</span>
             </div>
+            {lead.cargo && (
+              <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+                <span className="text-white/35">Cargo</span>
+                <span className="text-white/80">{lead.cargo}</span>
+              </div>
+            )}
+            {lead.instagram && (
+              <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+                <span className="text-white/35">Instagram</span>
+                <a href={`https://instagram.com/${lead.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer"
+                  className="text-[hsl(42_100%_55%)] hover:underline">{lead.instagram}</a>
+              </div>
+            )}
             <div className="flex flex-wrap gap-3 pt-1">
               <a href={waLink} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-xs tracking-widest uppercase px-5 py-2.5 rounded-sm hover:opacity-90">

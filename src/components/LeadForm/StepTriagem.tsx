@@ -3,18 +3,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 const schema = z.object({
-  negocio: z.string().min(3, "Conta um pouco sobre o que você faz"),
-  desafio: z.string().min(1, "Selecione uma opção"),
+  negocio:            z.string().min(3, "Conta um pouco sobre o que você faz"),
+  segmento:           z.string().min(1, "Selecione um segmento"),
+  desafio:            z.string().min(1, "Selecione uma opção"),
   marketing_anterior: z.string().min(1, "Selecione uma opção"),
-  orcamento: z.string().min(1, "Selecione uma opção"),
-  quando_comecar: z.string().min(1, "Selecione uma opção"),
+  orcamento:          z.string().min(1, "Selecione uma opção"),
+  quando_comecar:     z.string().min(1, "Selecione uma opção"),
 });
 
 type TriagemData = z.infer<typeof schema>;
 
-const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
-const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-1";
-const labelCls = "block text-white/80 text-sm mb-2";
+const inputCls  = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
+const errorCls  = "text-[hsl(42_100%_55%)] text-xs mt-1";
+const labelCls  = "block text-white/80 text-sm mb-2";
+const selectCls = "w-full bg-[hsl(222_47%_7%)] border border-white/10 text-white px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm cursor-pointer";
 
 function RadioCard({ value, label, selected, onChange }: { value: string; label: string; selected: boolean; onChange: () => void }) {
   return (
@@ -28,6 +30,13 @@ function RadioCard({ value, label, selected, onChange }: { value: string; label:
   );
 }
 
+const SEGMENTOS = [
+  "Serviço", "Varejo", "Food Service / Restaurante", "E-commerce",
+  "Educação", "Saúde / Estética / Beleza", "Imobiliária",
+  "Finanças / Contabilidade", "Construção / Reforma",
+  "Agência / Marketing", "Tecnologia / SaaS", "Indústria", "Outro",
+];
+
 interface Props {
   defaultValues: Partial<TriagemData>;
   onNext: (data: TriagemData, qualificado: boolean) => void;
@@ -36,7 +45,7 @@ interface Props {
 export function StepTriagem({ defaultValues, onNext }: Props) {
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<TriagemData>({
     resolver: zodResolver(schema),
-    defaultValues: { negocio: "", desafio: "", marketing_anterior: "", orcamento: "", quando_comecar: "", ...defaultValues },
+    defaultValues: { negocio: "", segmento: "", desafio: "", marketing_anterior: "", orcamento: "", quando_comecar: "", ...defaultValues },
   });
 
   const watched = watch();
@@ -49,7 +58,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
 
-      {/* Q1 */}
+      {/* Q1 — o que faz */}
       <div>
         <label className={labelCls}>O que você faz e o que vende?</label>
         <p className="text-white/30 text-xs mb-2">Pode ser qualquer negócio — produto, serviço, atendimento presencial ou online.</p>
@@ -57,7 +66,18 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
         {errors.negocio && <p className={errorCls}>{errors.negocio.message}</p>}
       </div>
 
-      {/* Q2 */}
+      {/* Q2 — segmento */}
+      <div>
+        <label className={labelCls}>Qual é o segmento do seu negócio?</label>
+        <select {...register("segmento")} className={selectCls}
+          style={{ backgroundColor: "hsl(222 47% 7%)" }}>
+          <option value="" disabled>Selecione o segmento...</option>
+          {SEGMENTOS.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        {errors.segmento && <p className={errorCls}>{errors.segmento.message}</p>}
+      </div>
+
+      {/* Q3 — desafio */}
       <div>
         <label className={labelCls}>Qual é o maior desafio no seu negócio agora?</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
@@ -68,7 +88,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
         {errors.desafio && <p className={errorCls}>{errors.desafio.message}</p>}
       </div>
 
-      {/* Q3 */}
+      {/* Q4 — marketing anterior */}
       <div>
         <label className={labelCls}>Você já investiu em marketing digital antes?</label>
         <div className="flex flex-col sm:flex-row gap-2 mt-2">
@@ -79,7 +99,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
         {errors.marketing_anterior && <p className={errorCls}>{errors.marketing_anterior.message}</p>}
       </div>
 
-      {/* Q4 */}
+      {/* Q5 — orçamento */}
       <div>
         <label className={labelCls}>Qual é o orçamento mensal disponível para marketing?</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
@@ -90,7 +110,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
         {errors.orcamento && <p className={errorCls}>{errors.orcamento.message}</p>}
       </div>
 
-      {/* Q5 — chave */}
+      {/* Q6 — quando comecar */}
       <div>
         <label className={labelCls}>Quando você quer começar?</label>
         <p className="text-white/30 text-xs mb-2">Seja honesto — isso não elimina ninguém, só ajuda a gente a priorizar.</p>

@@ -108,8 +108,12 @@ export function StepDiagnostico({ defaultValues, onNext, onBack }: Props) {
 
             <div>
               <label className={labelCls}>Qual é o seu faturamento médio mensal hoje?</label>
-              <p className={hintCls}>Não precisa ser exato — uma estimativa já ajuda.</p>
-              <input {...register("procedimentos_mes")} placeholder="Ex: entre R$10k e R$15k/mês, em torno de R$5k..." className={inputCls} />
+              <p className={hintCls}>Seja sincero — isso ajuda a indicar a solução certa pro seu momento.</p>
+              <div className="flex flex-col gap-2 mt-2">
+                {["Até R$5.000", "R$5.000 – R$20.000", "R$20.000 – R$50.000", "R$50.000 – R$100.000", "R$100.000 – R$500.000", "Acima de R$500.000"].map(o => (
+                  <RadioCard key={o} label={o} selected={watched.procedimentos_mes === o} onChange={() => setValue("procedimentos_mes", o, { shouldValidate: true })} />
+                ))}
+              </div>
               {errors.procedimentos_mes && <p className={errorCls}>{errors.procedimentos_mes.message}</p>}
             </div>
 

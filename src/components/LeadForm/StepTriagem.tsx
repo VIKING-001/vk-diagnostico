@@ -13,70 +13,56 @@ const schema = z.object({
 
 type TriagemData = z.infer<typeof schema>;
 
-const inputCls  = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
-const errorCls  = "text-[hsl(42_100%_55%)] text-xs mt-1";
-const labelCls  = "block text-white/80 text-sm mb-2";
-const selectCls = "w-full bg-[hsl(222_47%_7%)] border border-white/10 text-white px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm cursor-pointer";
+const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
+const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-1";
+const labelCls = "block text-white/80 text-sm mb-2";
+const catCls   = "text-[0.6rem] tracking-[0.18em] uppercase text-[hsl(42_100%_55%)] mt-4 mb-1 col-span-2";
 
 function RadioCard({ value, label, selected, onChange }: { value: string; label: string; selected: boolean; onChange: () => void }) {
   return (
-    <label className={`flex items-center gap-3 p-4 border cursor-pointer transition-all duration-150 ${
+    <label className={`flex items-center gap-3 p-3 border cursor-pointer transition-all duration-150 ${
       selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.1)] text-white" : "border-white/10 text-white/50 hover:border-white/25"
     }`}>
       <input type="radio" value={value} checked={selected} onChange={onChange} className="sr-only" />
-      <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/30"}`} />
-      <span className="text-sm">{label}</span>
+      <span className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/30"}`} />
+      <span className="text-sm leading-tight">{label}</span>
     </label>
   );
 }
 
-const SEGMENTOS = [
-  // Alimentação
-  "Restaurante / Lanchonete",
-  "Delivery / Dark Kitchen",
-  "Bar / Churrascaria / Buffet",
-  "Confeitaria / Padaria / Café",
-  // Saúde & Bem-estar
-  "Clínica Médica / Hospital",
-  "Odontologia",
-  "Psicologia / Terapia",
-  "Estética / Beleza / Salão",
-  "Academia / Personal Trainer / Pilates",
-  "Farmácia / Suplementos",
-  "Nutrição / Bem-estar",
-  // Educação
-  "Escola / Curso Presencial",
-  "Curso Online / Infoproduto",
-  "Coaching / Mentoria",
-  // Comércio & Varejo
-  "Varejo Físico (loja)",
-  "E-commerce",
-  "Moda / Roupas / Acessórios",
-  "Pet Shop / Veterinário",
-  "Automotivo / Veículos",
-  // Imóveis & Construção
-  "Imobiliária / Corretor",
-  "Construção / Incorporadora",
-  "Arquitetura / Design de Interiores",
-  "Reforma / Acabamento",
-  // Profissionais Liberais & Jurídico
-  "Advocacia / Direito",
-  "Contabilidade / Financeiro",
-  "Consultoria Empresarial",
-  "Engenharia / Projetos",
-  // Tecnologia & Digital
-  "Tecnologia / SaaS / Software",
-  "Agência / Marketing Digital",
-  "Freelancer / Criador de Conteúdo",
-  // Outros Serviços
-  "Segurança / Vigilância",
-  "Logística / Transporte / Frete",
-  "Turismo / Hotelaria / Viagem",
-  "Eventos / Casamentos / Formaturas",
-  "Energia Solar",
-  "Franquia",
-  "Indústria / Manufatura",
-  "Outro",
+const SEGMENTO_GRUPOS = [
+  {
+    categoria: "🍔 Alimentação",
+    itens: ["Restaurante / Lanchonete", "Delivery / Dark Kitchen", "Bar / Churrascaria / Buffet", "Confeitaria / Padaria / Café"],
+  },
+  {
+    categoria: "🏥 Saúde & Bem-estar",
+    itens: ["Clínica Médica / Hospital", "Odontologia", "Psicologia / Terapia", "Estética / Beleza / Salão", "Academia / Personal Trainer / Pilates", "Farmácia / Suplementos", "Nutrição / Bem-estar"],
+  },
+  {
+    categoria: "📚 Educação",
+    itens: ["Escola / Curso Presencial", "Curso Online / Infoproduto", "Coaching / Mentoria"],
+  },
+  {
+    categoria: "🛍️ Comércio & Varejo",
+    itens: ["Varejo Físico (loja)", "E-commerce", "Moda / Roupas / Acessórios", "Pet Shop / Veterinário", "Automotivo / Veículos"],
+  },
+  {
+    categoria: "🏠 Imóveis & Construção",
+    itens: ["Imobiliária / Corretor", "Construção / Incorporadora", "Arquitetura / Design de Interiores", "Reforma / Acabamento"],
+  },
+  {
+    categoria: "⚖️ Profissionais Liberais",
+    itens: ["Advocacia / Direito", "Contabilidade / Financeiro", "Consultoria Empresarial", "Engenharia / Projetos"],
+  },
+  {
+    categoria: "💻 Tecnologia & Digital",
+    itens: ["Tecnologia / SaaS / Software", "Agência / Marketing Digital", "Freelancer / Criador de Conteúdo"],
+  },
+  {
+    categoria: "🚀 Outros",
+    itens: ["Segurança / Vigilância", "Logística / Transporte / Frete", "Turismo / Hotelaria / Viagem", "Eventos / Casamentos / Formaturas", "Energia Solar", "Franquia", "Indústria / Manufatura", "Outro"],
+  },
 ];
 
 interface Props {
@@ -111,11 +97,22 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
       {/* Q2 — segmento */}
       <div>
         <label className={labelCls}>Qual é o segmento do seu negócio?</label>
-        <select {...register("segmento")} className={selectCls}
-          style={{ backgroundColor: "hsl(222 47% 7%)" }}>
-          <option value="" disabled>Selecione o segmento...</option>
-          {SEGMENTOS.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
+        <div className="grid grid-cols-2 gap-2 mt-1">
+          {SEGMENTO_GRUPOS.map(grupo => (
+            <>
+              <p key={grupo.categoria} className={catCls}>{grupo.categoria}</p>
+              {grupo.itens.map(item => (
+                <RadioCard
+                  key={item}
+                  value={item}
+                  label={item}
+                  selected={watched.segmento === item}
+                  onChange={() => setValue("segmento", item, { shouldValidate: true })}
+                />
+              ))}
+            </>
+          ))}
+        </div>
         {errors.segmento && <p className={errorCls}>{errors.segmento.message}</p>}
       </div>
 

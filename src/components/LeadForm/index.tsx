@@ -75,7 +75,7 @@ export function LeadForm() {
         <div className="mb-8">
           <p className="text-[0.6rem] tracking-widest uppercase text-[hsl(42_100%_55%)] mb-3">Diagnóstico gratuito</p>
           <h1 className="font-display text-5xl leading-tight mb-2">Antes de tudo,<br /><span className="text-white/40">me conta um pouco.</span></h1>
-          <p className="text-sm text-white/40 leading-relaxed">5 perguntas rápidas. Só o que importa pra entender se faz sentido a gente trabalhar junto.</p>
+          <p className="text-sm text-white/40 leading-relaxed">5 perguntas. Com as respostas certas, já consigo mapear onde está o dinheiro parado no seu negócio.</p>
         </div>
       )}
       {step === "contato" && (

@@ -134,7 +134,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           {sub === 0 && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">O que você faz e o que vende?</h3>
-              <p className="text-white/40 text-sm mb-5">Pode ser qualquer negócio — produto, serviço, presencial ou online.</p>
+              <p className="text-white/60 text-sm mb-5">Pode ser qualquer negócio — produto, serviço, presencial ou online.</p>
               <input
                 {...register("negocio")}
                 placeholder="Ex: hamburgueria, consultoria, loja de roupas..."
@@ -157,7 +157,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           {sub === 1 && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual o segmento do seu negócio?</h3>
-              <p className="text-white/40 text-sm mb-5">Toque para selecionar.</p>
+              <p className="text-white/60 text-sm mb-5">Toque para selecionar.</p>
 
               <div className="space-y-6">
                 {SEGMENTO_GRUPOS.map(grupo => (
@@ -186,7 +186,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           {sub === 2 && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual seu maior desafio agora?</h3>
-              <p className="text-white/40 text-sm mb-5">Toque na opção que mais combina com o seu momento.</p>
+              <p className="text-white/60 text-sm mb-5">Toque na opção que mais combina com o seu momento.</p>
               <div className="flex flex-col gap-2">
                 {["Atrair mais clientes", "Converter melhor os que chegam", "Estruturar e fortalecer a marca", "Crescer com consistência"].map(o => (
                   <Option key={o} label={o} selected={watched.desafio === o} onClick={() => pickAndAdvance("desafio", o)} />
@@ -200,7 +200,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           {sub === 3 && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Você já investiu em marketing digital?</h3>
-              <p className="text-white/40 text-sm mb-5">Não tem certo ou errado — só ajuda a entender seu histórico.</p>
+              <p className="text-white/60 text-sm mb-5">Não tem certo ou errado — só ajuda a entender seu histórico.</p>
               <div className="flex flex-col gap-2">
                 {["Sim, já investi", "Não, nunca investi"].map(o => (
                   <Option key={o} label={o} selected={watched.marketing_anterior === o} onClick={() => pickAndAdvance("marketing_anterior", o)} />
@@ -214,7 +214,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           {sub === 4 && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual seu orçamento mensal para marketing?</h3>
-              <p className="text-white/40 text-sm mb-5">Quanto você consegue investir todo mês.</p>
+              <p className="text-white/60 text-sm mb-5">Quanto você consegue investir todo mês.</p>
               <div className="flex flex-col gap-2">
                 {["Até R$1.500", "R$1.500 – R$3.000", "R$3.000 – R$6.000", "Acima de R$6.000"].map(o => (
                   <Option key={o} label={o} selected={watched.orcamento === o} onClick={() => pickAndAdvance("orcamento", o)} />
@@ -228,7 +228,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           {sub === 5 && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Quando você quer começar?</h3>
-              <p className="text-white/40 text-sm mb-5">Seja honesto — isso não elimina ninguém, só ajuda a priorizar.</p>
+              <p className="text-white/60 text-sm mb-5">Seja honesto — isso não elimina ninguém, só ajuda a priorizar.</p>
               <div className="flex flex-col gap-2">
                 {["Agora — já decidi", "Em breve — estou avaliando", "Ainda pesquisando — sem prazo"].map(o => (
                   <Option key={o} label={o} selected={watched.quando_comecar === o} onClick={() => pickAndAdvance("quando_comecar", o)} />
@@ -246,7 +246,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
         <button
           type="button"
           onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setSub(s => s - 1); }}
-          className="text-white/40 text-xs tracking-widest uppercase mt-8 hover:text-white/70 transition-colors"
+          className="text-white/60 text-xs tracking-widest uppercase mt-8 hover:text-white/70 transition-colors"
         >
           ← Voltar
         </button>

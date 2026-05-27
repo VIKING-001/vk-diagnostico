@@ -27,7 +27,7 @@ const inputCls  = "w-full bg-white/5 border border-white/10 text-white placehold
 const taCls     = `${inputCls} min-h-[90px] resize-none`;
 const errorCls  = "text-[hsl(42_100%_55%)] text-xs mt-1";
 const labelCls  = "block text-white/80 text-sm mb-1";
-const hintCls   = "text-white/30 text-xs mb-2";
+const hintCls   = "text-white/55 text-xs mb-2";
 
 function RadioCard({ label, selected, onChange }: { label: string; selected: boolean; onChange: () => void }) {
   return (

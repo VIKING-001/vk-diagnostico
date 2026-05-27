@@ -83,8 +83,8 @@ export function StepContato({ defaultValues, onNext, onBack }: Props) {
       </div>
 
       <div>
-        <label className={labelCls}>Instagram da empresa <span className="text-white/30">(opcional)</span></label>
-        <p className="text-white/30 text-xs mb-2">Se ainda não tem, deixa em branco.</p>
+        <label className={labelCls}>Instagram da empresa <span className="text-white/55">(opcional)</span></label>
+        <p className="text-white/55 text-xs mb-2">Se ainda não tem, deixa em branco.</p>
         <input {...register("instagram")} placeholder="@suaempresa" className={inputCls} />
       </div>
 

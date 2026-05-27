@@ -74,22 +74,22 @@ export function LeadForm() {
       {step === "triagem" && (
         <div className="mb-8">
           <p className="text-[0.6rem] tracking-widest uppercase text-[hsl(42_100%_55%)] mb-3">Diagnóstico gratuito</p>
-          <h1 className="font-display text-5xl leading-tight mb-2">Antes de tudo,<br /><span className="text-white/40">me conta um pouco.</span></h1>
-          <p className="text-sm text-white/40 leading-relaxed">5 perguntas. Com as respostas certas, já consigo mapear onde está o dinheiro parado no seu negócio.</p>
+          <h1 className="font-display text-5xl leading-tight mb-2">Antes de tudo,<br /><span className="text-white/60">me conta um pouco.</span></h1>
+          <p className="text-sm text-white/60 leading-relaxed">5 perguntas. Com as respostas certas, já consigo mapear onde está o dinheiro parado no seu negócio.</p>
         </div>
       )}
       {step === "contato" && (
         <div className="mb-8">
           <p className="text-[0.6rem] tracking-widest uppercase text-[hsl(42_100%_55%)] mb-3">Seus dados</p>
-          <h2 className="font-display text-5xl leading-tight mb-2">Ótimo. Agora preciso<br /><span className="text-white/40">saber com quem falo.</span></h2>
-          <p className="text-sm text-white/40 leading-relaxed">Só para entrar em contato. Não compartilhamos com ninguém.</p>
+          <h2 className="font-display text-5xl leading-tight mb-2">Ótimo. Agora preciso<br /><span className="text-white/60">saber com quem falo.</span></h2>
+          <p className="text-sm text-white/60 leading-relaxed">Só para entrar em contato. Não compartilhamos com ninguém.</p>
         </div>
       )}
       {step === "diagnostico" && (
         <div className="mb-8">
           <p className="text-[0.6rem] tracking-widest uppercase text-[hsl(42_100%_55%)] mb-3">Diagnóstico estratégico</p>
-          <h2 className="font-display text-5xl leading-tight mb-2">Agora vamos<br /><span className="text-white/40">ao que interessa.</span></h2>
-          <p className="text-sm text-white/40 leading-relaxed">14 perguntas sobre o seu negócio. Quanto mais detalhe, melhor a análise.</p>
+          <h2 className="font-display text-5xl leading-tight mb-2">Agora vamos<br /><span className="text-white/60">ao que interessa.</span></h2>
+          <p className="text-sm text-white/60 leading-relaxed">14 perguntas sobre o seu negócio. Quanto mais detalhe, melhor a análise.</p>
         </div>
       )}
 

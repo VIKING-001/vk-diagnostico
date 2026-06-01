@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { StepTriagem } from "./StepTriagem";
 import { StepContato } from "./StepContato";
 import { StepDiagnostico } from "./StepDiagnostico";
@@ -19,11 +19,11 @@ const STEP_LABELS: Partial<Record<Step, string>> = {
 };
 
 // ── Animações ────────────────────────────────────────────────────────────────
-const fadeUp = {
+const fadeUp: Variants = {
   hidden:  { opacity: 0, y: 16 },
   visible: (i: number) => ({
     opacity: 1, y: 0,
-    transition: { duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.5, delay: i * 0.08, ease: "easeOut" },
   }),
 };
 
@@ -40,7 +40,7 @@ function ProgressBar({ currentIdx }: { currentIdx: number }) {
               style={{ background: "hsl(42 100% 55%)" }}
               initial={{ scaleX: 0, originX: 0 }}
               animate={{ scaleX: i < currentIdx ? 1 : i === currentIdx ? 0.5 : 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
             />
           </div>
         ))}

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SEGMENTO_GRUPOS, type SegmentoCategoria, type SegmentoItem } from "../../lib/segmentos";
+import { Option } from "./shared";
 
 const schema = z.object({
   negocio:            z.string().min(3, "Conta um pouco sobre o que você faz"),
@@ -18,26 +19,6 @@ type TriagemData = z.infer<typeof schema>;
 
 const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-base sm:text-sm";
 const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-2";
-
-// Opção clicável grande, ideal mobile (sem scroll horizontal, fácil de tocar)
-function Option({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full flex items-start gap-3 px-4 py-4 border text-left transition-all duration-150 active:scale-[0.99] overflow-visible ${
-        selected
-          ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.12)] text-white"
-          : "border-white/10 text-white hover:border-white/30"
-      }`}
-    >
-      <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 mt-[2px] transition-all ${
-        selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/40"
-      }`} />
-      <span className="flex-1 min-w-0 text-[15px] sm:text-sm leading-snug break-words">{label}</span>
-    </button>
-  );
-}
 
 // Carrossel horizontal com scroll-snap nativo (touch-friendly, sem lib externa)
 function SwipeRow({ children }: { children: React.ReactNode }) {

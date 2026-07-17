@@ -108,12 +108,15 @@ export function LeadForm() {
   }
 
   async function handleFinalSubmit(diagData: Pick<LeadData,
-    "tempo_mercado" | "procedimentos_mes" | "ticket_medio" | "retorno_cliente" |
-    "fonte_clientes" | "ciclo_vendas" | "taxa_fechamento" |
-    "campanhas_pagas" | "melhor_resultado" | "prova_social" |
-    "diferencial" | "case_marcante" | "capacidade_fechamento" | "objetivo_90_dias"
-  >) {
-    const full = { ...formData, ...diagData } as LeadData;
+    "tempo_mercado" | "procedimentos_mes" | "ticket_medio" | "taxa_fechamento" |
+    "fonte_clientes" | "campanhas_pagas" | "prova_social" |
+    "capacidade_fechamento" | "objetivo_90_dias"
+  > & { objetivo_90_dias_outro?: string }) {
+    const { objetivo_90_dias_outro, ...diagRest } = diagData;
+    const objetivo_90_dias = diagRest.objetivo_90_dias === "Outro" && objetivo_90_dias_outro
+      ? `Outro: ${objetivo_90_dias_outro}`
+      : diagRest.objetivo_90_dias;
+    const full = { ...formData, ...diagRest, objetivo_90_dias } as LeadData;
     setSending(true);
     // saveLead e notifyLead rodam independentes: se o banco falhar, o admin
     // ainda recebe o e-mail com os dados do lead (não depende da linha salva).
@@ -168,7 +171,7 @@ export function LeadForm() {
               eyebrow="Diagnóstico estratégico"
               title="Agora vamos"
               highlight="ao que interessa."
-              subtitle="14 perguntas sobre o seu negócio. Quanto mais detalhe, melhor a análise."
+              subtitle="Só o essencial sobre o seu negócio — a maioria só de toque."
             />
           </motion.div>
         )}
@@ -203,7 +206,7 @@ export function LeadForm() {
         {step === "diagnostico" && (
           <StepDiagnostico
             defaultValues={formData}
-            tipo_negocio={formData.tipo_negocio}
+            marketing_anterior={formData.marketing_anterior}
             onNext={handleFinalSubmit}
             onBack={() => goToStep("contato")}
           />

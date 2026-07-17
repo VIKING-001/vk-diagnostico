@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { SEGMENTO_GRUPOS, type SegmentoCategoria, type SegmentoItem } from "../../lib/segmentos";
 
 const schema = z.object({
   negocio:            z.string().min(3, "Conta um pouco sobre o que você faz"),
@@ -17,17 +18,6 @@ type TriagemData = z.infer<typeof schema>;
 
 const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-base sm:text-sm";
 const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-2";
-
-const SEGMENTO_GRUPOS = [
-  { cat: "🍔 Alimentação",            itens: ["Restaurante", "Lanchonete", "Delivery", "Bar e Boteco", "Churrascaria", "Buffet", "Padaria", "Confeitaria", "Café"] },
-  { cat: "🏥 Saúde e Bem-estar",      itens: ["Clínica Médica", "Odontologia", "Psicologia", "Estética", "Salão de Beleza", "Academia", "Personal Trainer", "Pilates", "Farmácia", "Nutrição"] },
-  { cat: "📚 Educação",               itens: ["Escola", "Curso Presencial", "Curso Online", "Infoproduto", "Coaching", "Mentoria"] },
-  { cat: "🛍️ Comércio e Varejo",     itens: ["Loja Física", "E-commerce", "Moda e Vestuário", "Calçados", "Pet Shop", "Veterinário", "Loja de Veículos", "Eletrônicos"] },
-  { cat: "🏠 Imóveis e Construção",   itens: ["Imobiliária", "Corretor de Imóveis", "Construtora", "Incorporadora", "Arquitetura", "Design de Interiores", "Reforma", "Engenharia"] },
-  { cat: "⚖️ Profissionais Liberais", itens: ["Advocacia", "Contabilidade", "Consultoria Empresarial", "Recursos Humanos"] },
-  { cat: "💻 Tecnologia e Digital",   itens: ["Software e SaaS", "Agência de Marketing", "Desenvolvimento Web", "Freelancer", "Criador de Conteúdo", "Influenciador Digital"] },
-  { cat: "🚀 Outros",                 itens: ["Segurança e Vigilância", "Logística", "Transportadora", "Turismo", "Hotelaria e Pousada", "Eventos e Casamentos", "Energia Solar", "Franquia", "Indústria", "Agronegócio", "Outro"] },
-];
 
 // Opção clicável grande, ideal mobile (sem scroll horizontal, fácil de tocar)
 function Option({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
@@ -49,6 +39,62 @@ function Option({ label, selected, onClick }: { label: string; selected: boolean
   );
 }
 
+// Carrossel horizontal com scroll-snap nativo (touch-friendly, sem lib externa)
+function SwipeRow({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 sm:-mx-1 sm:px-1"
+      style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SwipeCard({ label, selected, onClick, index }: { label: string; selected: boolean; onClick: () => void; index: number }) {
+  return (
+    <motion.button
+      type="button"
+      onClick={onClick}
+      initial={{ opacity: 0, x: 16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
+      className={`snap-center flex-shrink-0 w-[150px] flex flex-col items-start gap-3 px-4 py-4 border text-left transition-all duration-150 active:scale-[0.97] rounded-sm ${
+        selected
+          ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.12)] text-white"
+          : "border-white/10 text-white hover:border-white/30"
+      }`}
+    >
+      <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${
+        selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/40"
+      }`} />
+      <span className="text-[15px] sm:text-sm leading-snug break-words">{label}</span>
+    </motion.button>
+  );
+}
+
+interface PickerState {
+  stage: "cat" | "item" | "sub";
+  cat: SegmentoCategoria | null;
+  item: SegmentoItem | null;
+}
+
+// Se já existir um segmento selecionado (ex: voltando de uma etapa seguinte),
+// reconstrói em qual estágio do picker o usuário estava.
+function findSelection(segmento?: string): PickerState {
+  if (segmento) {
+    for (const cat of SEGMENTO_GRUPOS) {
+      for (const item of cat.itens) {
+        if (item.label === segmento) return { stage: "item", cat, item };
+        if (item.subitens?.some(s => segmento === `${item.label} — ${s}`)) {
+          return { stage: "sub", cat, item };
+        }
+      }
+    }
+  }
+  return { stage: "cat", cat: null, item: null };
+}
+
 // ── SUB-STEPS — 1 pergunta por tela ─────────────────────────────────────
 // 0: negocio (texto — botão continuar)
 // 1: segmento (auto-advance)
@@ -66,6 +112,7 @@ interface Props {
 
 export function StepTriagem({ defaultValues, onNext }: Props) {
   const [sub, setSub] = useState(0);
+  const [picker, setPicker] = useState<PickerState>(() => findSelection(defaultValues.segmento));
 
   const { register, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<TriagemData>({
     resolver: zodResolver(schema),
@@ -157,27 +204,73 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           {sub === 1 && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual o segmento do seu negócio?</h3>
-              <p className="text-white/60 text-sm mb-5">Toque para selecionar.</p>
+              <p className="text-white/60 text-sm mb-5">Arraste para o lado e toque para selecionar.</p>
 
-              <div className="space-y-6">
-                {SEGMENTO_GRUPOS.map(grupo => (
-                  <div key={grupo.cat}>
-                    <p className="text-xs font-semibold tracking-wide text-[hsl(42_100%_55%)] mb-2">
-                      {grupo.cat}
-                    </p>
-                    <div className="flex flex-col gap-1.5">
-                      {grupo.itens.map(item => (
-                        <Option
-                          key={item}
-                          label={item}
-                          selected={watched.segmento === item}
-                          onClick={() => pickAndAdvance("segmento", item)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {picker.stage === "cat" && (
+                <SwipeRow>
+                  {SEGMENTO_GRUPOS.map((grupo, i) => (
+                    <SwipeCard
+                      key={grupo.cat}
+                      index={i}
+                      label={grupo.cat}
+                      selected={picker.cat?.cat === grupo.cat}
+                      onClick={() => setPicker({ stage: "item", cat: grupo, item: null })}
+                    />
+                  ))}
+                </SwipeRow>
+              )}
+
+              {picker.stage === "item" && picker.cat && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setPicker({ stage: "cat", cat: null, item: null })}
+                    className="text-[hsl(42_100%_55%)] text-xs tracking-widest uppercase mb-3"
+                  >
+                    ← Categorias
+                  </button>
+                  <p className="text-xs font-semibold tracking-wide text-[hsl(42_100%_55%)] mb-2">{picker.cat.cat}</p>
+                  <SwipeRow>
+                    {picker.cat.itens.map((item, i) => (
+                      <SwipeCard
+                        key={item.label}
+                        index={i}
+                        label={item.label}
+                        selected={watched.segmento === item.label}
+                        onClick={() => {
+                          if (item.subitens) setPicker({ stage: "sub", cat: picker.cat, item });
+                          else pickAndAdvance("segmento", item.label);
+                        }}
+                      />
+                    ))}
+                  </SwipeRow>
+                </div>
+              )}
+
+              {picker.stage === "sub" && picker.cat && picker.item && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setPicker({ stage: "item", cat: picker.cat, item: null })}
+                    className="text-[hsl(42_100%_55%)] text-xs tracking-widest uppercase mb-3"
+                  >
+                    ← Voltar
+                  </button>
+                  <p className="text-xs font-semibold tracking-wide text-[hsl(42_100%_55%)] mb-2">{picker.item.label}</p>
+                  <SwipeRow>
+                    {picker.item.subitens!.map((subnicho, i) => (
+                      <SwipeCard
+                        key={subnicho}
+                        index={i}
+                        label={subnicho}
+                        selected={watched.segmento === `${picker.item!.label} — ${subnicho}`}
+                        onClick={() => pickAndAdvance("segmento", `${picker.item!.label} — ${subnicho}`)}
+                      />
+                    ))}
+                  </SwipeRow>
+                </div>
+              )}
+
               {errors.segmento && <p className={errorCls}>{errors.segmento.message}</p>}
             </div>
           )}

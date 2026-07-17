@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { isPushSupported, subscribeToPush, getPushSubscription } from "../lib/push";
 
 const SESSION_KEY = "vk_admin_auth";
 
@@ -417,10 +419,48 @@ function ForgotPasswordScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
+// ── Botão de ativar notificações push ───────────────────────────────────────
+function NotificationsButton() {
+  const [status, setStatus] = useState<"checking" | "off" | "on" | "unsupported" | "loading">("checking");
+
+  useEffect(() => {
+    if (!isPushSupported()) { setStatus("unsupported"); return; }
+    getPushSubscription().then(sub => setStatus(sub ? "on" : "off"));
+  }, []);
+
+  async function activate() {
+    setStatus("loading");
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") { setStatus("off"); return; }
+      await subscribeToPush();
+      setStatus("on");
+    } catch (e) {
+      console.error("Erro ao ativar notificações:", e);
+      setStatus("off");
+    }
+  }
+
+  if (status === "unsupported") return null;
+
+  return (
+    <button
+      onClick={status === "on" ? undefined : activate}
+      disabled={status === "loading" || status === "on"}
+      className={`text-[0.68rem] tracking-[0.18em] uppercase transition-colors ${
+        status === "on" ? "text-[hsl(42_100%_55%)]" : "text-white/30 hover:text-white/60"
+      }`}
+    >
+      {status === "on" ? "🔔 Notificações ativas" : status === "loading" ? "Ativando..." : "🔕 Ativar notificações"}
+    </button>
+  );
+}
+
 // ── Página principal ───────────────────────────────────────────────────────
 export function AdminPage() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem(SESSION_KEY) === "1");
   const [pass, setPass] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("Senha incorreta.");
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -434,6 +474,18 @@ export function AdminPage() {
     setLoading(true);
     supabase.from("leads").select("*").order("created_at", { ascending: false })
       .then(({ data }) => { setLeads((data as Lead[]) ?? []); setLoading(false); });
+  }, [authed]);
+
+  // Lista atualiza sozinha em tempo real quando um lead novo é inserido
+  useEffect(() => {
+    if (!authed) return;
+    const channel = supabase
+      .channel("leads-changes")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "leads" }, (payload) => {
+        setLeads(prev => [payload.new as Lead, ...prev]);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [authed]);
 
   async function login(e: React.FormEvent) {
@@ -470,14 +522,24 @@ export function AdminPage() {
         <form onSubmit={login} className="w-full max-w-sm space-y-4">
           <p className="font-display text-3xl text-[hsl(42_100%_55%)]">VK COMPANY</p>
           <p className="text-xs text-white/30 tracking-widest uppercase">Painel administrativo</p>
-          <input
-            type="password"
-            placeholder="Senha"
-            value={pass}
-            onChange={e => setPass(e.target.value)}
-            className={`w-full bg-white/5 border ${error ? "border-red-500/60" : "border-white/10"} text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm`}
-            autoFocus
-          />
+          <div className="relative">
+            <input
+              type={showPass ? "text" : "password"}
+              placeholder="Senha"
+              value={pass}
+              onChange={e => setPass(e.target.value)}
+              className={`w-full bg-white/5 border ${error ? "border-red-500/60" : "border-white/10"} text-white placeholder-white/25 pl-4 pr-11 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm`}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => setShowPass(v => !v)}
+              aria-label={showPass ? "Ocultar senha" : "Mostrar senha"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+            >
+              {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </div>
           {error && <p className="text-red-400 text-xs">{errorMsg}</p>}
           <button type="submit" className="w-full bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-sm tracking-widest uppercase py-3 rounded-sm hover:opacity-90">
             Entrar
@@ -505,6 +567,7 @@ export function AdminPage() {
       <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
         <span className="font-display text-xl text-[hsl(42_100%_55%)] tracking-wider">VK COMPANY — Admin</span>
         <div className="flex items-center gap-4">
+          <NotificationsButton />
           <button
             onClick={() => setShowSettings(s => !s)}
             className="text-[0.68rem] tracking-[0.18em] uppercase text-white/30 hover:text-white/60 transition-colors"

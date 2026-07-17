@@ -115,16 +115,21 @@ export function LeadForm() {
   >) {
     const full = { ...formData, ...diagData } as LeadData;
     setSending(true);
-    try {
-      await saveLead(full);
-      await notifyLead(full);
-      trackLeadConversion(full.email, full.whatsapp);
-    } catch (e) {
-      console.error("Erro ao salvar lead:", e);
-    } finally {
-      setSending(false);
-      goToStep("sucesso");
+    // saveLead e notifyLead rodam independentes: se o banco falhar, o admin
+    // ainda recebe o e-mail com os dados do lead (não depende da linha salva).
+    const results = await Promise.allSettled([
+      saveLead(full),
+      notifyLead(full),
+    ]);
+    if (results[0].status === "rejected") {
+      console.error("Erro ao salvar lead no banco:", results[0].reason);
     }
+    if (results[1].status === "rejected") {
+      console.error("Erro ao notificar lead:", results[1].reason);
+    }
+    trackLeadConversion(full.email, full.whatsapp);
+    setSending(false);
+    goToStep("sucesso");
   }
 
   return (

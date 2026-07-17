@@ -7,6 +7,7 @@ import { StepSucesso } from "./StepSucesso";
 import { StepDescartado } from "./StepDescartado";
 import { saveLead, type LeadData } from "../../lib/supabase";
 import { notifyLead } from "../../lib/notify";
+import { trackLeadConversion } from "../../lib/meta-pixel";
 
 type Step = "triagem" | "descartado" | "contato" | "diagnostico" | "sucesso";
 
@@ -117,6 +118,7 @@ export function LeadForm() {
     try {
       await saveLead(full);
       await notifyLead(full);
+      trackLeadConversion(full.email, full.whatsapp);
     } catch (e) {
       console.error("Erro ao salvar lead:", e);
     } finally {

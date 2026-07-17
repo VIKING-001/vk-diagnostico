@@ -11,7 +11,6 @@ const schema = z.object({
   ticket_medio:           z.string().min(1, "Selecione uma opção"),
   taxa_fechamento:        z.string().min(1, "Selecione uma opção"),
   fonte_clientes:         z.string().min(1, "Selecione ao menos uma opção"),
-  campanhas_pagas:        z.string(),
   prova_social:           z.string().min(1, "Selecione uma opção"),
   capacidade_fechamento:  z.string().min(1, "Selecione uma opção"),
   objetivo_90_dias:       z.string().min(1, "Selecione uma opção"),
@@ -56,10 +55,6 @@ const QUESTIONS: Record<Exclude<FieldKey, "fonte_clientes">, QuestionConfig> = {
     title: "De cada 10 pessoas que entram em contato ou chegam até você, quantas compram?",
     options: ["Poucas (1 a 2 em 10)", "Algumas (3 a 5 em 10)", "Boa parte (6 a 8 em 10)", "Quase todas"],
   },
-  campanhas_pagas: {
-    title: "Quanto você investe em campanhas pagas hoje, por mês?",
-    options: ["Até R$500", "R$500 – R$1.500", "R$1.500 – R$3.000", "Acima de R$3.000"],
-  },
   prova_social: {
     title: "Você tem prova social? (depoimentos, avaliações, cases, antes/depois, fotos de clientes)",
     options: ["Tenho bastante — uso ativamente", "Tenho alguns — mas não uso direito", "Tenho pouco — está espalhado", "Não tenho nada estruturado"],
@@ -74,12 +69,10 @@ const QUESTIONS: Record<Exclude<FieldKey, "fonte_clientes">, QuestionConfig> = {
   },
 };
 
-function getActiveFields(marketingAnterior?: string): FieldKey[] {
-  const fields: FieldKey[] = ["tempo_mercado", "procedimentos_mes", "ticket_medio", "taxa_fechamento", "fonte_clientes"];
-  if (marketingAnterior === "Sim, já investi") fields.push("campanhas_pagas");
-  fields.push("prova_social", "capacidade_fechamento", "objetivo_90_dias");
-  return fields;
-}
+const ACTIVE_FIELDS: FieldKey[] = [
+  "tempo_mercado", "procedimentos_mes", "ticket_medio", "taxa_fechamento",
+  "fonte_clientes", "prova_social", "capacidade_fechamento", "objetivo_90_dias",
+];
 
 function SelectQuestion({ title, subtitle, options, value, onSelect }: {
   title: string; subtitle?: string; options: string[]; value: string; onSelect: (v: string) => void;
@@ -99,16 +92,15 @@ function SelectQuestion({ title, subtitle, options, value, onSelect }: {
 
 interface Props {
   defaultValues: Partial<DiagData>;
-  marketing_anterior?: string;
   onNext: (data: DiagData) => void;
   onBack: () => void;
 }
 
-export function StepDiagnostico({ defaultValues, marketing_anterior, onNext, onBack }: Props) {
+export function StepDiagnostico({ defaultValues, onNext, onBack }: Props) {
   const [sub, setSub] = useState(0);
   const [fonteSel, setFonteSel] = useState<string[]>(() => parseFonteClientes(defaultValues.fonte_clientes));
 
-  const activeFields = getActiveFields(marketing_anterior);
+  const activeFields = ACTIVE_FIELDS;
   const SUB_STEPS = activeFields.length;
   const currentField = activeFields[sub];
 
@@ -116,7 +108,7 @@ export function StepDiagnostico({ defaultValues, marketing_anterior, onNext, onB
     resolver: zodResolver(schema),
     defaultValues: {
       tempo_mercado: "", procedimentos_mes: "", ticket_medio: "", taxa_fechamento: "",
-      fonte_clientes: "", campanhas_pagas: "", prova_social: "",
+      fonte_clientes: "", prova_social: "",
       capacidade_fechamento: "", objetivo_90_dias: "", objetivo_90_dias_outro: "",
       ...defaultValues,
     },

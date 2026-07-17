@@ -109,7 +109,7 @@ export function LeadForm() {
 
   async function handleFinalSubmit(diagData: Pick<LeadData,
     "tempo_mercado" | "procedimentos_mes" | "ticket_medio" | "taxa_fechamento" |
-    "fonte_clientes" | "campanhas_pagas" | "prova_social" |
+    "fonte_clientes" | "prova_social" |
     "capacidade_fechamento" | "objetivo_90_dias"
   > & { objetivo_90_dias_outro?: string }) {
     const { objetivo_90_dias_outro, ...diagRest } = diagData;
@@ -151,7 +151,7 @@ export function LeadForm() {
               eyebrow="Diagnóstico gratuito"
               title="Antes de tudo,"
               highlight="me conta um pouco."
-              subtitle="5 perguntas. Com as respostas certas, já consigo mapear onde está o dinheiro parado no seu negócio."
+              subtitle="Poucas perguntas rápidas. Com as respostas certas, já consigo mapear onde está o dinheiro parado no seu negócio."
             />
           </motion.div>
         )}
@@ -206,7 +206,6 @@ export function LeadForm() {
         {step === "diagnostico" && (
           <StepDiagnostico
             defaultValues={formData}
-            marketing_anterior={formData.marketing_anterior}
             onNext={handleFinalSubmit}
             onBack={() => goToStep("contato")}
           />

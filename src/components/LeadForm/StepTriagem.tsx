@@ -11,6 +11,7 @@ const schema = z.object({
   segmento:           z.string().min(1, "Selecione um segmento"),
   desafio:            z.string().min(1, "Selecione uma opção"),
   marketing_anterior: z.string().min(1, "Selecione uma opção"),
+  campanhas_pagas:    z.string(),
   orcamento:          z.string().min(1, "Selecione uma opção"),
   quando_comecar:     z.string().min(1, "Selecione uma opção"),
 });
@@ -77,14 +78,26 @@ function findSelection(segmento?: string): PickerState {
 }
 
 // ── SUB-STEPS — 1 pergunta por tela ─────────────────────────────────────
-// 0: negocio (texto — botão continuar)
-// 1: segmento (auto-advance)
-// 2: desafio (auto-advance)
-// 3: marketing_anterior (auto-advance)
-// 4: orcamento (auto-advance)
-// 5: quando_comecar (auto-advance + submit)
-const SUB_STEPS = 6;
-const subTitles = ["O que você faz", "Seu segmento", "Maior desafio", "Marketing", "Orçamento", "Quando começar"];
+// negocio (texto — botão continuar), segmento, desafio, marketing_anterior,
+// campanhas_pagas (só se marketing_anterior === "Sim, já investi"), orcamento, quando_comecar
+type StepKey = "negocio" | "segmento" | "desafio" | "marketing_anterior" | "campanhas_pagas" | "orcamento" | "quando_comecar";
+
+const STEP_TITLES: Record<StepKey, string> = {
+  negocio: "O que você faz",
+  segmento: "Seu segmento",
+  desafio: "Maior desafio",
+  marketing_anterior: "Marketing",
+  campanhas_pagas: "Investimento atual",
+  orcamento: "Orçamento",
+  quando_comecar: "Quando começar",
+};
+
+function getActiveSteps(marketingAnterior?: string): StepKey[] {
+  const steps: StepKey[] = ["negocio", "segmento", "desafio", "marketing_anterior"];
+  if (marketingAnterior === "Sim, já investi") steps.push("campanhas_pagas");
+  steps.push("orcamento", "quando_comecar");
+  return steps;
+}
 
 interface Props {
   defaultValues: Partial<TriagemData>;
@@ -97,11 +110,14 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
 
   const { register, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<TriagemData>({
     resolver: zodResolver(schema),
-    defaultValues: { negocio: "", segmento: "", desafio: "", marketing_anterior: "", orcamento: "", quando_comecar: "", ...defaultValues },
+    defaultValues: { negocio: "", segmento: "", desafio: "", marketing_anterior: "", campanhas_pagas: "", orcamento: "", quando_comecar: "", ...defaultValues },
     mode: "onBlur",
   });
 
   const watched = watch();
+  const activeSteps = getActiveSteps(watched.marketing_anterior);
+  const SUB_STEPS = activeSteps.length;
+  const currentStep = activeSteps[sub];
 
   function goNext() {
     if (sub < SUB_STEPS - 1) {
@@ -137,7 +153,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
   return (
     <div>
       <p className="text-[0.6rem] tracking-[0.2em] uppercase text-[hsl(42_100%_55%)] mb-2">
-        {subTitles[sub]} — {sub + 1} de {SUB_STEPS}
+        {STEP_TITLES[currentStep]} — {sub + 1} de {SUB_STEPS}
       </p>
 
       {/* barra de progresso fina */}
@@ -158,8 +174,8 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           transition={{ duration: 0.2 }}
         >
 
-          {/* SUB 0 — O que faz */}
-          {sub === 0 && (
+          {/* O que faz */}
+          {currentStep === "negocio" && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">O que você faz e o que vende?</h3>
               <p className="text-white/60 text-sm mb-5">Pode ser qualquer negócio — produto, serviço, presencial ou online.</p>
@@ -181,8 +197,8 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
             </div>
           )}
 
-          {/* SUB 1 — Segmento */}
-          {sub === 1 && (
+          {/* Segmento */}
+          {currentStep === "segmento" && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual o segmento do seu negócio?</h3>
               <p className="text-white/60 text-sm mb-5">Arraste para o lado e toque para selecionar.</p>
@@ -256,8 +272,8 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
             </div>
           )}
 
-          {/* SUB 2 — Desafio */}
-          {sub === 2 && (
+          {/* Desafio */}
+          {currentStep === "desafio" && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual seu maior desafio agora?</h3>
               <p className="text-white/60 text-sm mb-5">Toque na opção que mais combina com o seu momento.</p>
@@ -270,8 +286,8 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
             </div>
           )}
 
-          {/* SUB 3 — Marketing anterior */}
-          {sub === 3 && (
+          {/* Marketing anterior */}
+          {currentStep === "marketing_anterior" && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Você já investiu em marketing digital?</h3>
               <p className="text-white/60 text-sm mb-5">Não tem certo ou errado — só ajuda a entender seu histórico.</p>
@@ -284,8 +300,21 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
             </div>
           )}
 
-          {/* SUB 4 — Orçamento */}
-          {sub === 4 && (
+          {/* Quanto já investe (só aparece se marketing_anterior === "Sim, já investi") */}
+          {currentStep === "campanhas_pagas" && (
+            <div>
+              <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Quanto você investe em campanhas pagas hoje, por mês?</h3>
+              <p className="text-white/60 text-sm mb-5">O que você já gasta atualmente com tráfego pago.</p>
+              <div className="flex flex-col gap-2">
+                {["Até R$500", "R$500 – R$1.500", "R$1.500 – R$3.000", "Acima de R$3.000"].map(o => (
+                  <Option key={o} label={o} selected={watched.campanhas_pagas === o} onClick={() => pickAndAdvance("campanhas_pagas", o)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Orçamento */}
+          {currentStep === "orcamento" && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual seu orçamento mensal para marketing?</h3>
               <p className="text-white/60 text-sm mb-5">Quanto você consegue investir todo mês.</p>
@@ -298,8 +327,8 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
             </div>
           )}
 
-          {/* SUB 5 — Quando começar */}
-          {sub === 5 && (
+          {/* Quando começar */}
+          {currentStep === "quando_comecar" && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Quando você quer começar?</h3>
               <p className="text-white/60 text-sm mb-5">Seja honesto — isso não elimina ninguém, só ajuda a priorizar.</p>

@@ -103,56 +103,56 @@ function LeadCard({ lead }: { lead: Lead }) {
     <div className={`border ${lead.qualificado ? "border-[hsl(42_100%_55%/0.3)]" : "border-white/8"} bg-white/2 transition-all`}>
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/3 transition-colors"
+        className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-4 text-left hover:bg-white/3 transition-colors"
       >
-        <div className="flex items-center gap-3 flex-wrap">
-          <div>
-            <p className="font-bold text-sm text-white">{lead.nome}</p>
-            <p className="text-xs text-white/40">{lead.empresa}</p>
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
+          <div className="min-w-0">
+            <p className="font-bold text-sm text-white truncate max-w-[45vw] sm:max-w-none">{lead.nome}</p>
+            <p className="text-xs text-white/40 truncate max-w-[45vw] sm:max-w-none">{lead.empresa}</p>
           </div>
           {lead.qualificado
-            ? <span className="text-[0.55rem] tracking-widest uppercase bg-[hsl(42_100%_55%/0.15)] text-[hsl(42_100%_55%)] px-2 py-1 rounded-sm">Qualificado</span>
-            : <span className="text-[0.55rem] tracking-widest uppercase bg-white/5 text-white/30 px-2 py-1 rounded-sm">Não qualificado</span>
+            ? <span className="text-[0.55rem] tracking-widest uppercase bg-[hsl(42_100%_55%/0.15)] text-[hsl(42_100%_55%)] px-2 py-1 rounded-sm shrink-0">Qualificado</span>
+            : <span className="text-[0.55rem] tracking-widest uppercase bg-white/5 text-white/30 px-2 py-1 rounded-sm shrink-0">Não qualificado</span>
           }
           {lead.tipo_negocio && (
-            <span className="text-[0.55rem] tracking-widest uppercase bg-white/5 text-white/40 px-2 py-1 rounded-sm hidden sm:inline">
+            <span className="text-[0.55rem] tracking-widest uppercase bg-white/5 text-white/40 px-2 py-1 rounded-sm hidden sm:inline shrink-0">
               {TIPO_LABELS[lead.tipo_negocio] ?? lead.tipo_negocio}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 sm:gap-6 shrink-0">
           <p className="text-xs text-white/30 hidden sm:block">{formatDate(lead.created_at)}</p>
           <span className="text-white/30 text-xs">{open ? "▲" : "▼"}</span>
         </div>
       </button>
 
       {open && (
-        <div className="px-5 pb-5 border-t border-white/5 pt-4 space-y-4">
+        <div className="px-4 sm:px-5 pb-5 border-t border-white/5 pt-4 space-y-4">
           <div className="space-y-3">
-            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
               <span className="text-white/35">Nome completo</span>
               <span className="text-white/80 font-medium">{lead.nome}</span>
             </div>
-            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
               <span className="text-white/35">WhatsApp</span>
               <span className="text-white/80 font-medium">{lead.whatsapp}</span>
             </div>
-            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
               <span className="text-white/35">E-mail</span>
               <span className="text-white/80">{lead.email}</span>
             </div>
-            <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
               <span className="text-white/35">Empresa</span>
               <span className="text-white/80">{lead.empresa}</span>
             </div>
             {lead.cargo && (
-              <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
                 <span className="text-white/35">Cargo</span>
                 <span className="text-white/80">{lead.cargo}</span>
               </div>
             )}
             {lead.instagram && (
-              <div className="grid grid-cols-[120px_1fr] gap-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
                 <span className="text-white/35">Instagram</span>
                 <a href={`https://instagram.com/${lead.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer"
                   className="text-[hsl(42_100%_55%)] hover:underline">{lead.instagram}</a>
@@ -174,7 +174,7 @@ function LeadCard({ lead }: { lead: Lead }) {
             <p className="text-[0.55rem] tracking-widest uppercase text-white/25 mb-2">Triagem</p>
             <div className="space-y-2">
               {triagemFields.map(k => (lead as any)[k] ? (
-                <div key={k} className="grid grid-cols-[160px_1fr] gap-2 text-sm">
+                <div key={k} className="grid grid-cols-1 sm:grid-cols-[170px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
                   <span className="text-white/35">{FIELD_LABELS[k]}</span>
                   <span className="text-white/80">{(lead as any)[k]}</span>
                 </div>
@@ -187,7 +187,7 @@ function LeadCard({ lead }: { lead: Lead }) {
               <p className="text-[0.55rem] tracking-widest uppercase text-white/25 mb-2">Diagnóstico estratégico</p>
               <div className="space-y-2">
                 {diagFields.map(k => (lead as any)[k] ? (
-                  <div key={k} className="grid grid-cols-[160px_1fr] gap-2 text-sm">
+                  <div key={k} className="grid grid-cols-1 sm:grid-cols-[170px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
                     <span className="text-white/35 shrink-0">{FIELD_LABELS[k]}</span>
                     <span className="text-white/80">{(lead as any)[k]}</span>
                   </div>
@@ -563,24 +563,26 @@ export function AdminPage() {
   const filtered = filter === "qualified" ? qualified : filter === "unqualified" ? unqualified : leads;
 
   return (
-    <div className="min-h-screen bg-[hsl(222_47%_2%)] text-white">
-      <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
-        <span className="font-display text-xl text-[hsl(42_100%_55%)] tracking-wider">VK COMPANY — Admin</span>
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[hsl(222_47%_2%)] text-white">
+      <header className="border-b border-white/5 px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <span className="font-display text-lg sm:text-xl text-[hsl(42_100%_55%)] tracking-wider whitespace-nowrap">
+          VK COMPANY<span className="hidden sm:inline"> — Admin</span>
+        </span>
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
           <NotificationsButton />
           <button
             onClick={() => setShowSettings(s => !s)}
-            className="text-[0.68rem] tracking-[0.18em] uppercase text-white/30 hover:text-white/60 transition-colors"
+            className="text-[0.68rem] tracking-[0.18em] uppercase text-white/30 hover:text-white/60 transition-colors whitespace-nowrap"
           >
-            ⚙ Configurações
+            ⚙ Config
           </button>
-          <button onClick={logout} className="text-[0.68rem] tracking-[0.18em] uppercase text-white/30 hover:text-white/60 transition-colors">
+          <button onClick={logout} className="text-[0.68rem] tracking-[0.18em] uppercase text-white/30 hover:text-white/60 transition-colors whitespace-nowrap">
             Sair
           </button>
         </div>
       </header>
 
-      <main className="px-6 py-10 max-w-5xl mx-auto space-y-8">
+      <main className="px-4 sm:px-6 py-8 sm:py-10 max-w-5xl mx-auto space-y-6 sm:space-y-8">
 
         {/* Configurações */}
         {showSettings && (

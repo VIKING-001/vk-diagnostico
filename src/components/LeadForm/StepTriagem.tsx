@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { SEGMENTO_GRUPOS, type SegmentoCategoria, type SegmentoItem } from "../../lib/segmentos";
+import { SEGMENTO_GRUPOS } from "../../lib/segmentos";
 import { Option } from "./shared";
 
 const schema = z.object({
@@ -21,71 +21,109 @@ type TriagemData = z.infer<typeof schema>;
 const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-base sm:text-sm";
 const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-2";
 
-// Grid de cards de seleção — ícone em badge, glow dourado no selecionado, check no canto
-function ChoiceGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">{children}</div>;
-}
-
 // Separa emoji do texto em labels tipo "🏥 Saúde e Bem-estar"
 function splitIcon(label: string): { icon: string | null; text: string } {
   const match = label.match(/^(\p{Extended_Pictographic}️?)\s+(.+)$/u);
   return match ? { icon: match[1], text: match[2] } : { icon: null, text: label };
 }
 
-function ChoiceCard({ label, selected, onClick, index }: { label: string; selected: boolean; onClick: () => void; index: number }) {
-  const { icon, text } = splitIcon(label);
+function normalize(s: string) {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
+interface FlatSegmento { category: string; value: string; }
+
+const FLAT_SEGMENTOS: FlatSegmento[] = SEGMENTO_GRUPOS.flatMap(cat =>
+  cat.itens.flatMap(item =>
+    item.subitens
+      ? item.subitens.map(sub => ({ category: cat.cat, value: `${item.label} — ${sub}` }))
+      : [{ category: cat.cat, value: item.label }]
+  )
+);
+
+// Modal com busca — mostra todos os nichos de uma vez, agrupados por categoria
+function SegmentoModal({ value, onSelect, onClose }: { value: string; onSelect: (v: string) => void; onClose: () => void }) {
+  const [query, setQuery] = useState("");
+
+  const filtered = query.trim()
+    ? FLAT_SEGMENTOS.filter(s => normalize(s.value).includes(normalize(query)) || normalize(s.category).includes(normalize(query)))
+    : FLAT_SEGMENTOS;
+
+  const grouped = filtered.reduce<Record<string, FlatSegmento[]>>((acc, s) => {
+    (acc[s.category] ??= []).push(s);
+    return acc;
+  }, {});
+
   return (
-    <motion.button
-      type="button"
-      onClick={onClick}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, delay: Math.min(index * 0.025, 0.25) }}
-      className={`relative flex flex-col items-start gap-2.5 p-3.5 sm:p-4 rounded-lg border text-left transition-all duration-200 active:scale-[0.97] min-h-[92px] ${
-        selected
-          ? "border-[hsl(42_100%_55%)] bg-gradient-to-br from-[hsl(42_100%_55%/0.14)] to-[hsl(42_100%_55%/0.03)] shadow-[0_0_0_1px_hsl(42_100%_55%/0.35),0_8px_20px_-8px_hsl(42_100%_55%/0.4)]"
-          : "border-white/8 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.05]"
-      }`}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
     >
-      {icon && (
-        <span className={`grid place-items-center w-9 h-9 rounded-md text-base transition-colors ${
-          selected ? "bg-[hsl(42_100%_55%/0.16)]" : "bg-white/5"
-        }`}>
-          {icon}
-        </span>
-      )}
-      <span className={`text-[13px] sm:text-[13.5px] font-medium leading-snug break-words ${selected ? "text-white" : "text-white/75"}`}>
-        {text}
-      </span>
-      {selected && (
-        <span className="absolute top-2.5 right-2.5 grid place-items-center w-5 h-5 rounded-full bg-[hsl(42_100%_55%)]">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="hsl(222 47% 5%)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </span>
-      )}
-    </motion.button>
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 40, opacity: 0 }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        onClick={e => e.stopPropagation()}
+        className="w-full sm:max-w-lg max-h-[85vh] bg-[hsl(222_47%_5%)] border border-white/10 rounded-t-xl sm:rounded-xl flex flex-col overflow-hidden"
+      >
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-white/8">
+          <h3 className="text-white font-display text-lg">Selecione o segmento</h3>
+          <button type="button" onClick={onClose} className="text-white/40 hover:text-white/70 transition-colors p-1" aria-label="Fechar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div className="px-5 py-3 border-b border-white/8">
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Buscar nicho... (ex: clínica, moda, e-commerce)"
+            autoFocus
+            className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-4 py-2.5 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm"
+          />
+        </div>
+
+        <div className="overflow-y-auto flex-1 px-5 py-3">
+          {Object.keys(grouped).length === 0 && (
+            <p className="text-white/40 text-sm py-6 text-center">Nenhum nicho encontrado.</p>
+          )}
+          {Object.entries(grouped).map(([category, items]) => {
+            const { icon, text } = splitIcon(category);
+            return (
+              <div key={category} className="mb-4 last:mb-2">
+                <p className="text-[0.65rem] tracking-widest uppercase text-[hsl(42_100%_55%)] mb-2 flex items-center gap-1.5">
+                  {icon && <span>{icon}</span>}{text}
+                </p>
+                <div className="flex flex-col gap-1">
+                  {items.map(item => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => onSelect(item.value)}
+                      className={`w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-sm text-left text-sm transition-colors ${
+                        value === item.value
+                          ? "bg-[hsl(42_100%_55%/0.14)] text-white border border-[hsl(42_100%_55%/0.4)]"
+                          : "text-white/75 hover:bg-white/5 border border-transparent"
+                      }`}
+                    >
+                      <span className="break-words">{item.value}</span>
+                      {value === item.value && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(42 100% 55%)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+    </motion.div>
   );
-}
-
-interface PickerState {
-  stage: "cat" | "item" | "sub";
-  cat: SegmentoCategoria | null;
-  item: SegmentoItem | null;
-}
-
-// Se já existir um segmento selecionado (ex: voltando de uma etapa seguinte),
-// reconstrói em qual estágio do picker o usuário estava.
-function findSelection(segmento?: string): PickerState {
-  if (segmento) {
-    for (const cat of SEGMENTO_GRUPOS) {
-      for (const item of cat.itens) {
-        if (item.label === segmento) return { stage: "item", cat, item };
-        if (item.subitens?.some(s => segmento === `${item.label} — ${s}`)) {
-          return { stage: "sub", cat, item };
-        }
-      }
-    }
-  }
-  return { stage: "cat", cat: null, item: null };
 }
 
 // ── SUB-STEPS — 1 pergunta por tela ─────────────────────────────────────
@@ -117,7 +155,7 @@ interface Props {
 
 export function StepTriagem({ defaultValues, onNext }: Props) {
   const [sub, setSub] = useState(0);
-  const [picker, setPicker] = useState<PickerState>(() => findSelection(defaultValues.segmento));
+  const [segmentoModalOpen, setSegmentoModalOpen] = useState(false);
 
   const { register, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<TriagemData>({
     resolver: zodResolver(schema),
@@ -212,72 +250,18 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           {currentStep === "segmento" && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual o segmento do seu negócio?</h3>
-              <p className="text-white/60 text-sm mb-5">Toque para selecionar.</p>
+              <p className="text-white/60 text-sm mb-5">Toque pra abrir a lista completa de nichos.</p>
 
-              {picker.stage === "cat" && (
-                <ChoiceGrid>
-                  {SEGMENTO_GRUPOS.map((grupo, i) => (
-                    <ChoiceCard
-                      key={grupo.cat}
-                      index={i}
-                      label={grupo.cat}
-                      selected={picker.cat?.cat === grupo.cat}
-                      onClick={() => setPicker({ stage: "item", cat: grupo, item: null })}
-                    />
-                  ))}
-                </ChoiceGrid>
-              )}
-
-              {picker.stage === "item" && picker.cat && (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setPicker({ stage: "cat", cat: null, item: null })}
-                    className="text-[hsl(42_100%_55%)] text-xs tracking-widest uppercase mb-3"
-                  >
-                    ← Categorias
-                  </button>
-                  <p className="text-xs font-semibold tracking-wide text-[hsl(42_100%_55%)] mb-2">{picker.cat.cat}</p>
-                  <ChoiceGrid>
-                    {picker.cat.itens.map((item, i) => (
-                      <ChoiceCard
-                        key={item.label}
-                        index={i}
-                        label={item.label}
-                        selected={watched.segmento === item.label}
-                        onClick={() => {
-                          if (item.subitens) setPicker({ stage: "sub", cat: picker.cat, item });
-                          else pickAndAdvance("segmento", item.label);
-                        }}
-                      />
-                    ))}
-                  </ChoiceGrid>
-                </div>
-              )}
-
-              {picker.stage === "sub" && picker.cat && picker.item && (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setPicker({ stage: "item", cat: picker.cat, item: null })}
-                    className="text-[hsl(42_100%_55%)] text-xs tracking-widest uppercase mb-3"
-                  >
-                    ← Voltar
-                  </button>
-                  <p className="text-xs font-semibold tracking-wide text-[hsl(42_100%_55%)] mb-2">{picker.item.label}</p>
-                  <ChoiceGrid>
-                    {picker.item.subitens!.map((subnicho, i) => (
-                      <ChoiceCard
-                        key={subnicho}
-                        index={i}
-                        label={subnicho}
-                        selected={watched.segmento === `${picker.item!.label} — ${subnicho}`}
-                        onClick={() => pickAndAdvance("segmento", `${picker.item!.label} — ${subnicho}`)}
-                      />
-                    ))}
-                  </ChoiceGrid>
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() => setSegmentoModalOpen(true)}
+                className={`w-full flex items-center justify-between gap-3 px-4 py-4 border text-left rounded-sm transition-colors ${
+                  watched.segmento ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.08)] text-white" : "border-white/15 text-white/40 hover:border-white/30"
+                }`}
+              >
+                <span className="text-sm">{watched.segmento || "Selecionar segmento..."}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </button>
 
               {errors.segmento && <p className={errorCls}>{errors.segmento.message}</p>}
             </div>
@@ -365,6 +349,19 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           ← Voltar
         </button>
       )}
+
+      <AnimatePresence>
+        {segmentoModalOpen && (
+          <SegmentoModal
+            value={watched.segmento}
+            onClose={() => setSegmentoModalOpen(false)}
+            onSelect={(v) => {
+              setSegmentoModalOpen(false);
+              pickAndAdvance("segmento", v);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

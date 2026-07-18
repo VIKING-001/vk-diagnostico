@@ -21,36 +21,47 @@ type TriagemData = z.infer<typeof schema>;
 const inputCls = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-base sm:text-sm";
 const errorCls = "text-[hsl(42_100%_55%)] text-xs mt-2";
 
-// Carrossel horizontal com scroll-snap nativo (touch-friendly, sem lib externa)
-function SwipeRow({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 sm:-mx-1 sm:px-1"
-      style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-    >
-      {children}
-    </div>
-  );
+// Grid de cards de seleção — ícone em badge, glow dourado no selecionado, check no canto
+function ChoiceGrid({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">{children}</div>;
 }
 
-function SwipeCard({ label, selected, onClick, index }: { label: string; selected: boolean; onClick: () => void; index: number }) {
+// Separa emoji do texto em labels tipo "🏥 Saúde e Bem-estar"
+function splitIcon(label: string): { icon: string | null; text: string } {
+  const match = label.match(/^(\p{Extended_Pictographic}️?)\s+(.+)$/u);
+  return match ? { icon: match[1], text: match[2] } : { icon: null, text: label };
+}
+
+function ChoiceCard({ label, selected, onClick, index }: { label: string; selected: boolean; onClick: () => void; index: number }) {
+  const { icon, text } = splitIcon(label);
   return (
     <motion.button
       type="button"
       onClick={onClick}
-      initial={{ opacity: 0, x: 16 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.3) }}
-      className={`snap-center flex-shrink-0 w-[150px] flex flex-col items-start gap-3 px-4 py-4 border text-left transition-all duration-150 active:scale-[0.97] rounded-sm ${
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.025, 0.25) }}
+      className={`relative flex flex-col items-start gap-2.5 p-3.5 sm:p-4 rounded-lg border text-left transition-all duration-200 active:scale-[0.97] min-h-[92px] ${
         selected
-          ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.12)] text-white"
-          : "border-white/10 text-white hover:border-white/30"
+          ? "border-[hsl(42_100%_55%)] bg-gradient-to-br from-[hsl(42_100%_55%/0.14)] to-[hsl(42_100%_55%/0.03)] shadow-[0_0_0_1px_hsl(42_100%_55%/0.35),0_8px_20px_-8px_hsl(42_100%_55%/0.4)]"
+          : "border-white/8 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.05]"
       }`}
     >
-      <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${
-        selected ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%)]" : "border-white/40"
-      }`} />
-      <span className="text-[15px] sm:text-sm leading-snug break-words">{label}</span>
+      {icon && (
+        <span className={`grid place-items-center w-9 h-9 rounded-md text-base transition-colors ${
+          selected ? "bg-[hsl(42_100%_55%/0.16)]" : "bg-white/5"
+        }`}>
+          {icon}
+        </span>
+      )}
+      <span className={`text-[13px] sm:text-[13.5px] font-medium leading-snug break-words ${selected ? "text-white" : "text-white/75"}`}>
+        {text}
+      </span>
+      {selected && (
+        <span className="absolute top-2.5 right-2.5 grid place-items-center w-5 h-5 rounded-full bg-[hsl(42_100%_55%)]">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="hsl(222 47% 5%)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+      )}
     </motion.button>
   );
 }
@@ -201,12 +212,12 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
           {currentStep === "segmento" && (
             <div>
               <h3 className="text-white text-xl sm:text-2xl font-display mb-2">Qual o segmento do seu negócio?</h3>
-              <p className="text-white/60 text-sm mb-5">Arraste para o lado e toque para selecionar.</p>
+              <p className="text-white/60 text-sm mb-5">Toque para selecionar.</p>
 
               {picker.stage === "cat" && (
-                <SwipeRow>
+                <ChoiceGrid>
                   {SEGMENTO_GRUPOS.map((grupo, i) => (
-                    <SwipeCard
+                    <ChoiceCard
                       key={grupo.cat}
                       index={i}
                       label={grupo.cat}
@@ -214,7 +225,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
                       onClick={() => setPicker({ stage: "item", cat: grupo, item: null })}
                     />
                   ))}
-                </SwipeRow>
+                </ChoiceGrid>
               )}
 
               {picker.stage === "item" && picker.cat && (
@@ -227,9 +238,9 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
                     ← Categorias
                   </button>
                   <p className="text-xs font-semibold tracking-wide text-[hsl(42_100%_55%)] mb-2">{picker.cat.cat}</p>
-                  <SwipeRow>
+                  <ChoiceGrid>
                     {picker.cat.itens.map((item, i) => (
-                      <SwipeCard
+                      <ChoiceCard
                         key={item.label}
                         index={i}
                         label={item.label}
@@ -240,7 +251,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
                         }}
                       />
                     ))}
-                  </SwipeRow>
+                  </ChoiceGrid>
                 </div>
               )}
 
@@ -254,9 +265,9 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
                     ← Voltar
                   </button>
                   <p className="text-xs font-semibold tracking-wide text-[hsl(42_100%_55%)] mb-2">{picker.item.label}</p>
-                  <SwipeRow>
+                  <ChoiceGrid>
                     {picker.item.subitens!.map((subnicho, i) => (
-                      <SwipeCard
+                      <ChoiceCard
                         key={subnicho}
                         index={i}
                         label={subnicho}
@@ -264,7 +275,7 @@ export function StepTriagem({ defaultValues, onNext }: Props) {
                         onClick={() => pickAndAdvance("segmento", `${picker.item!.label} — ${subnicho}`)}
                       />
                     ))}
-                  </SwipeRow>
+                  </ChoiceGrid>
                 </div>
               )}
 

@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: "Missing META_ACCESS_TOKEN" });
   }
 
-  const { eventName, email, phone, eventSourceUrl } = req.body ?? {};
+  const { eventName, eventId, email, phone, eventSourceUrl } = req.body ?? {};
 
   try {
     const userData: Record<string, unknown> = {
@@ -36,6 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           data: [
             {
               event_name: eventName || "Lead",
+              event_id: eventId,
               event_time: Math.floor(Date.now() / 1000),
               action_source: "website",
               event_source_url: eventSourceUrl,

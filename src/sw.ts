@@ -3,6 +3,14 @@ import { precacheAndRoute } from "workbox-precaching";
 
 declare let self: ServiceWorkerGlobalScope;
 
+// Assume o controle imediatamente ao instalar, em vez de esperar todas as
+// abas antigas fecharem — sem isso, deploys novos ficam "presos" atrás de
+// uma versão em cache até o usuário fechar completamente o app/navegador.
+self.skipWaiting();
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener("push", (event) => {

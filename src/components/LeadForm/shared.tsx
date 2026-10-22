@@ -1,9 +1,12 @@
+export const WHATSAPP_LINK = `https://wa.me/5562992818038?text=${encodeURIComponent("Olá! Gostaria de conversar sobre o diagnóstico da VK Company.")}`;
+
 // Opção clicável grande, ideal mobile (sem scroll horizontal, fácil de tocar)
 export function Option({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={`w-full flex items-start gap-3 px-4 py-4 border text-left transition-all duration-150 active:scale-[0.99] overflow-visible ${
         selected
           ? "border-[hsl(42_100%_55%)] bg-[hsl(42_100%_55%/0.12)] text-white"

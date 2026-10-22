@@ -1,5 +1,3 @@
-import { supabase } from "./supabase";
-
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -24,11 +22,12 @@ export async function subscribeToPush() {
   }));
 
   const json = sub.toJSON();
-  const { error } = await supabase.from("push_subscriptions").upsert(
-    [{ endpoint: json.endpoint, p256dh: json.keys!.p256dh, auth: json.keys!.auth }],
-    { onConflict: "endpoint" }
-  );
-  if (error) throw error;
+  const response = await fetch("/api/admin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "register_push", endpoint: json.endpoint, p256dh: json.keys!.p256dh, auth: json.keys!.auth }),
+  });
+  if (!response.ok) throw new Error("Não foi possível salvar a inscrição de notificações.");
   return sub;
 }
 

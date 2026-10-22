@@ -2,20 +2,18 @@ import { useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { StepTriagem } from "./StepTriagem";
 import { StepContato } from "./StepContato";
-import { StepDiagnostico } from "./StepDiagnostico";
 import { StepSucesso } from "./StepSucesso";
 import { StepDescartado } from "./StepDescartado";
 import { saveLead, type LeadData } from "../../lib/supabase";
 import { notifyLead } from "../../lib/notify";
 import { trackLeadConversion } from "../../lib/meta-pixel";
 
-type Step = "triagem" | "descartado" | "contato" | "diagnostico" | "sucesso";
+type Step = "triagem" | "descartado" | "contato" | "sucesso";
 
-const PROGRESS_STEPS: Step[] = ["triagem", "contato", "diagnostico", "sucesso"];
+const PROGRESS_STEPS: Step[] = ["triagem", "contato", "sucesso"];
 const STEP_LABELS: Partial<Record<Step, string>> = {
   triagem:     "Triagem",
   contato:     "Seus dados",
-  diagnostico: "Diagnóstico",
   sucesso:     "Concluído",
 };
 
@@ -99,6 +97,7 @@ export function LeadForm() {
   const [step, setStep] = useState<Step>("triagem");
   const [formData, setFormData] = useState<Partial<LeadData>>({});
   const [sending, setSending] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const currentIdx = PROGRESS_STEPS.indexOf(step);
 
@@ -107,32 +106,30 @@ export function LeadForm() {
     setStep(next);
   }
 
-  async function handleFinalSubmit(diagData: Pick<LeadData,
-    "tempo_mercado" | "procedimentos_mes" | "ticket_medio" | "taxa_fechamento" |
-    "fonte_clientes" | "prova_social" |
-    "capacidade_fechamento" | "objetivo_90_dias"
-  > & { objetivo_90_dias_outro?: string }) {
-    const { objetivo_90_dias_outro, ...diagRest } = diagData;
-    const objetivo_90_dias = diagRest.objetivo_90_dias === "Outro" && objetivo_90_dias_outro
-      ? `Outro: ${objetivo_90_dias_outro}`
-      : diagRest.objetivo_90_dias;
-    const full = { ...formData, ...diagRest, objetivo_90_dias } as LeadData;
+  async function handleContactSubmit(contactData: Pick<LeadData, "nome" | "whatsapp"> & Partial<Pick<LeadData, "email" | "empresa" | "instagram">>) {
+    const full = { ...formData, ...contactData } as LeadData;
+    setSubmitError("");
     setSending(true);
-    // saveLead e notifyLead rodam independentes: se o banco falhar, o admin
-    // ainda recebe o e-mail com os dados do lead (não depende da linha salva).
-    const results = await Promise.allSettled([
-      saveLead(full),
-      notifyLead(full),
-    ]);
-    if (results[0].status === "rejected") {
-      console.error("Erro ao salvar lead no banco:", results[0].reason);
+    try {
+      // Mantém a notificação de contingência caso o banco recuse o registro.
+      const results = await Promise.allSettled([saveLead(full), notifyLead(full)]);
+      if (results[0].status === "rejected") {
+        console.error("Erro ao salvar lead no banco:", results[0].reason);
+        setSubmitError("Não conseguimos registrar seus dados agora. Tente novamente.");
+        return;
+      }
+      if (results[1].status === "rejected") {
+        console.error("Erro ao notificar lead:", results[1].reason);
+      }
+      trackLeadConversion(full.email ?? "", full.whatsapp);
+      setFormData(f => ({ ...f, ...contactData }));
+      goToStep("sucesso");
+    } catch (error) {
+      console.error("Erro inesperado ao enviar lead:", error);
+      setSubmitError("Não conseguimos registrar seus dados agora. Tente novamente.");
+    } finally {
+      setSending(false);
     }
-    if (results[1].status === "rejected") {
-      console.error("Erro ao notificar lead:", results[1].reason);
-    }
-    trackLeadConversion(full.email, full.whatsapp);
-    setSending(false);
-    goToStep("sucesso");
   }
 
   return (
@@ -151,7 +148,7 @@ export function LeadForm() {
               eyebrow="Diagnóstico gratuito"
               title="Antes de tudo,"
               highlight="me conta um pouco."
-              subtitle="Poucas perguntas rápidas. Com as respostas certas, já consigo mapear onde está o dinheiro parado no seu negócio."
+              subtitle="Quatro respostas rápidas para entendermos seu momento antes de uma análise estratégica."
             />
           </motion.div>
         )}
@@ -161,17 +158,7 @@ export function LeadForm() {
               eyebrow="Seus dados"
               title="Ótimo. Agora preciso"
               highlight="saber com quem falo."
-              subtitle="Só para entrar em contato. Não compartilhamos com ninguém."
-            />
-          </motion.div>
-        )}
-        {step === "diagnostico" && (
-          <motion.div key="hero-diag" exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-            <StepHero
-              eyebrow="Diagnóstico estratégico"
-              title="Agora vamos"
-              highlight="ao que interessa."
-              subtitle="Só o essencial sobre o seu negócio — a maioria só de toque."
+              subtitle="Usaremos essas informações para conversar sobre o seu cenário e combinar os próximos passos."
             />
           </motion.div>
         )}
@@ -199,18 +186,12 @@ export function LeadForm() {
         {step === "contato" && (
           <StepContato
             defaultValues={formData}
-            onNext={(data) => { setFormData(f => ({ ...f, ...data })); goToStep("diagnostico"); }}
+            onNext={handleContactSubmit}
             onBack={() => goToStep("triagem")}
+            submitError={submitError}
           />
         )}
-        {step === "diagnostico" && (
-          <StepDiagnostico
-            defaultValues={formData}
-            onNext={handleFinalSubmit}
-            onBack={() => goToStep("contato")}
-          />
-        )}
-        {step === "sucesso" && <StepSucesso nome={formData.nome || ""} whatsapp={formData.whatsapp || ""} />}
+        {step === "sucesso" && <StepSucesso nome={formData.nome || ""} whatsapp={formData.whatsapp || ""} desafio={formData.desafio || ""} faturamento={formData.procedimentos_mes || ""} investimento={formData.orcamento || ""} prazo={formData.quando_comecar || ""} />}
       </motion.div>
 
       {/* Overlay de envio */}

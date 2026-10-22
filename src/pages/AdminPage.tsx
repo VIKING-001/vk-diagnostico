@@ -1,9 +1,21 @@
 import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { supabase } from "../lib/supabase";
 import { isPushSupported, subscribeToPush, getPushSubscription } from "../lib/push";
 
-const SESSION_KEY = "vk_admin_auth";
+async function adminRequest(action: string, body: Record<string, unknown> = {}) {
+  const response = await fetch("/api/admin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...body, action }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error ?? "Não foi possível concluir a operação.") as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
 
 const TIPO_LABELS: Record<string, string> = {
   restaurante: "🍔 Restaurante / Delivery",
@@ -17,9 +29,9 @@ interface Lead {
   id: string;
   created_at: string;
   nome: string;
-  empresa: string;
+  empresa: string | null;
   whatsapp: string;
-  email: string;
+  email: string | null;
   instagram?: string;
   cargo: string;
   qualificado: boolean;
@@ -64,7 +76,7 @@ const FIELD_LABELS: Record<string, string> = {
   segmento: "Segmento",
   desafio: "Maior desafio",
   marketing_anterior: "Já investiu em marketing",
-  orcamento: "Orçamento mensal",
+  orcamento: "Verba mensal para anúncios",
   quando_comecar: "Quando quer começar",
   tempo_mercado: "Tempo no mercado",
   procedimentos_mes: "Faturamento mensal",
@@ -96,8 +108,8 @@ function LeadCard({ lead }: { lead: Lead }) {
   const [open, setOpen] = useState(false);
   const waLink = `https://wa.me/55${lead.whatsapp?.replace(/\D/g, "")}`;
 
-  const diagFields = Object.keys(FIELD_LABELS).filter(k => !["negocio","segmento","desafio","marketing_anterior","orcamento","quando_comecar"].includes(k));
-  const triagemFields = ["negocio", "segmento", "desafio", "marketing_anterior", "orcamento", "quando_comecar"];
+  const diagFields = Object.keys(FIELD_LABELS).filter(k => !["negocio","segmento","desafio","marketing_anterior","procedimentos_mes","orcamento","quando_comecar"].includes(k));
+  const triagemFields = ["negocio", "segmento", "desafio", "marketing_anterior", "procedimentos_mes", "orcamento", "quando_comecar"];
 
   return (
     <div className={`border ${lead.qualificado ? "border-[hsl(42_100%_55%/0.3)]" : "border-white/8"} bg-white/2 transition-all`}>
@@ -108,7 +120,7 @@ function LeadCard({ lead }: { lead: Lead }) {
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
           <div className="min-w-0">
             <p className="font-bold text-sm text-white truncate max-w-[45vw] sm:max-w-none">{lead.nome}</p>
-            <p className="text-xs text-white/40 truncate max-w-[45vw] sm:max-w-none">{lead.empresa}</p>
+            <p className="text-xs text-white/40 truncate max-w-[45vw] sm:max-w-none">{lead.empresa || "Empresa não informada"}</p>
           </div>
           {lead.qualificado
             ? <span className="text-[0.55rem] tracking-widest uppercase bg-[hsl(42_100%_55%/0.15)] text-[hsl(42_100%_55%)] px-2 py-1 rounded-sm shrink-0">Qualificado</span>
@@ -137,14 +149,14 @@ function LeadCard({ lead }: { lead: Lead }) {
               <span className="text-white/35">WhatsApp</span>
               <span className="text-white/80 font-medium">{lead.whatsapp}</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
+            {lead.email && <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
               <span className="text-white/35">E-mail</span>
               <span className="text-white/80">{lead.email}</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
+            </div>}
+            {lead.empresa && <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
               <span className="text-white/35">Empresa</span>
               <span className="text-white/80">{lead.empresa}</span>
-            </div>
+            </div>}
             {lead.cargo && (
               <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] gap-0.5 sm:gap-2 text-sm break-words min-w-0">
                 <span className="text-white/35">Cargo</span>
@@ -163,10 +175,10 @@ function LeadCard({ lead }: { lead: Lead }) {
                 className="inline-flex items-center gap-2 bg-[hsl(42_100%_55%)] text-[hsl(222_47%_5%)] font-bold text-xs tracking-widest uppercase px-5 py-2.5 rounded-sm hover:opacity-90">
                 ↗ Abrir WhatsApp
               </a>
-              <a href={`mailto:${lead.email}`}
+              {lead.email && <a href={`mailto:${lead.email}`}
                 className="inline-flex items-center gap-2 border border-white/15 text-white/60 text-xs tracking-widest uppercase px-5 py-2.5 rounded-sm hover:border-white/30">
                 ✉ Enviar e-mail
-              </a>
+              </a>}
             </div>
           </div>
 
@@ -182,7 +194,7 @@ function LeadCard({ lead }: { lead: Lead }) {
             </div>
           </div>
 
-          {lead.qualificado && (
+          {lead.qualificado && diagFields.some(k => (lead as any)[k]) && (
             <div>
               <p className="text-[0.55rem] tracking-widest uppercase text-white/25 mb-2">Diagnóstico estratégico</p>
               <div className="space-y-2">
@@ -204,7 +216,7 @@ function LeadCard({ lead }: { lead: Lead }) {
 }
 
 // ── Painel de alterar senha ────────────────────────────────────────────────
-function ChangePasswordPanel() {
+function ChangePasswordPanel({ onPasswordChanged }: { onPasswordChanged: () => void }) {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
@@ -219,19 +231,16 @@ function ChangePasswordPanel() {
     if (next !== confirm) { setMsg("As senhas não coincidem."); setStatus("error"); return; }
 
     setStatus("loading");
-    // Verifica senha atual no Supabase
-    const { data } = await supabase.from("config").select("value").eq("key", "admin_password").single();
-    if (!data || data.value !== current) {
-      setMsg("Senha atual incorreta."); setStatus("error"); return;
+    try {
+      await adminRequest("change_password", { currentPassword: current, newPassword: next });
+      setStatus("ok");
+      setMsg("Senha alterada com sucesso! Entre novamente com a nova senha.");
+      setCurrent(""); setNext(""); setConfirm("");
+      setTimeout(onPasswordChanged, 1800);
+    } catch (error) {
+      setMsg(error instanceof Error ? error.message : "Erro ao salvar. Tente novamente.");
+      setStatus("error");
     }
-    // Salva nova senha
-    const { error } = await supabase.from("config").update({ value: next }).eq("key", "admin_password");
-    if (error) { setMsg("Erro ao salvar. Tente novamente."); setStatus("error"); return; }
-
-    setStatus("ok");
-    setMsg("Senha alterada com sucesso!");
-    setCurrent(""); setNext(""); setConfirm("");
-    setTimeout(() => { setOpen(false); setStatus("idle"); setMsg(""); }, 2000);
   }
 
   const inp = "w-full bg-white/5 border border-white/10 text-white placeholder-white/25 px-4 py-3 rounded-sm focus:outline-none focus:border-[hsl(42_100%_55%)] text-sm";
@@ -458,7 +467,8 @@ function NotificationsButton() {
 
 // ── Página principal ───────────────────────────────────────────────────────
 export function AdminPage() {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem(SESSION_KEY) === "1");
+  const [authed, setAuthed] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState(false);
@@ -468,45 +478,55 @@ export function AdminPage() {
   const [filter, setFilter] = useState<"all" | "qualified" | "unqualified">("all");
   const [showSettings, setShowSettings] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
+  const [refreshTick, setRefreshTick] = useState(0);
+  const [dataError, setDataError] = useState("");
 
   useEffect(() => {
-    if (!authed) return;
-    setLoading(true);
-    supabase.from("leads").select("*").order("created_at", { ascending: false })
-      .then(({ data }) => { setLeads((data as Lead[]) ?? []); setLoading(false); });
-  }, [authed]);
-
-  // Lista atualiza sozinha em tempo real quando um lead novo é inserido
-  useEffect(() => {
-    if (!authed) return;
-    const channel = supabase
-      .channel("leads-changes")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "leads" }, (payload) => {
-        setLeads(prev => [payload.new as Lead, ...prev]);
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [authed]);
+    if (sessionChecked && !authed) return;
+    let active = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const result = await adminRequest("leads");
+        if (active) { setLeads((result.leads as Lead[]) ?? []); setDataError(""); setAuthed(true); }
+      } catch (error) {
+        if (!active) return;
+        if ((error as Error & { status?: number }).status === 401) {
+          setAuthed(false);
+          setLeads([]);
+          if (sessionChecked) {
+            setErrorMsg("Sua sessão expirou. Entre novamente.");
+            setError(true);
+          }
+        } else {
+          setDataError(error instanceof Error ? error.message : "Não foi possível carregar os leads.");
+        }
+      } finally {
+        if (active) { setLoading(false); setSessionChecked(true); }
+      }
+    };
+    void load();
+    const interval = window.setInterval(() => { if (authed) void load(); }, 30_000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, [authed, sessionChecked, refreshTick]);
 
   async function login(e: React.FormEvent) {
     e.preventDefault();
     setError(false);
-
-    const { data } = await supabase.from("config").select("value").eq("key", "admin_password").single();
-    const savedPass = data?.value ?? "vk@admin2024";
-
-    if (pass === savedPass) {
-      sessionStorage.setItem(SESSION_KEY, "1");
+    try {
+      await adminRequest("login", { password: pass });
       setAuthed(true);
-    } else {
-      setErrorMsg("Senha incorreta.");
+      setSessionChecked(true);
+      setPass("");
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : "Senha incorreta.");
       setError(true);
       setTimeout(() => setError(false), 2000);
     }
   }
 
   function logout() {
-    sessionStorage.removeItem(SESSION_KEY);
+    void adminRequest("logout").catch(() => {});
     setAuthed(false);
     setLeads([]);
     setShowSettings(false);
@@ -514,6 +534,10 @@ export function AdminPage() {
 
   if (showForgot) {
     return <ForgotPasswordScreen onBack={() => setShowForgot(false)} />;
+  }
+
+  if (!sessionChecked) {
+    return <div className="min-h-screen bg-[hsl(222_47%_2%)] flex items-center justify-center"><div className="w-6 h-6 border-2 border-[hsl(42_100%_55%)] border-t-transparent rounded-full animate-spin" /></div>;
   }
 
   if (!authed) {
@@ -588,9 +612,11 @@ export function AdminPage() {
         {showSettings && (
           <div className="space-y-3">
             <p className="text-[0.6rem] tracking-widest uppercase text-white/25">Configurações</p>
-            <ChangePasswordPanel />
+            <ChangePasswordPanel onPasswordChanged={logout} />
           </div>
         )}
+
+        {dataError && <p role="alert" className="text-sm text-red-400">{dataError}</p>}
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -608,7 +634,7 @@ export function AdminPage() {
               {f === "all" ? `Todos (${leads.length})` : f === "qualified" ? `Qualificados (${qualified.length})` : `Não qualificados (${unqualified.length})`}
             </button>
           ))}
-          <button onClick={() => { setLoading(true); supabase.from("leads").select("*").order("created_at", { ascending: false }).then(({ data }) => { setLeads((data as Lead[]) ?? []); setLoading(false); }); }}
+          <button onClick={() => setRefreshTick(value => value + 1)}
             className="text-[0.65rem] tracking-widest uppercase px-4 py-2 rounded-sm border border-white/10 text-white/30 hover:border-white/25 ml-auto">
             ↻ Atualizar
           </button>

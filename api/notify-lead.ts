@@ -1,14 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
+import { adminAction } from "../server/admin";
 
 const RESEND_KEY = process.env.RESEND_API_KEY!;
 const FALLBACK_EMAIL = "rodrigocabral366@gmail.com";
-
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL!,
-  process.env.VITE_SUPABASE_ANON_KEY!
-);
 
 interface LeadPayload {
   nome?: string;
@@ -18,6 +13,7 @@ interface LeadPayload {
   negocio?: string;
   segmento?: string;
   desafio?: string;
+  procedimentos_mes?: string;
   orcamento?: string;
   quando_comecar?: string;
   qualificado?: boolean;
@@ -43,10 +39,11 @@ async function sendEmail(lead: LeadPayload) {
         ${row("Negócio", lead.negocio)}
         ${row("Segmento", lead.segmento)}
         ${row("Maior desafio", lead.desafio)}
-        ${row("Orçamento mensal", lead.orcamento)}
+        ${row("Faturamento mensal", lead.procedimentos_mes)}
+        ${row("Verba mensal para anúncios", lead.orcamento)}
         ${row("Quando quer começar", lead.quando_comecar)}
       </table>
-      <p style="color:#999;font-size:13px;margin-top:24px">Abra o painel admin para ver o diagnóstico completo.</p>
+      <p style="color:#999;font-size:13px;margin-top:24px">Abra o painel admin para ver as respostas enviadas.</p>
     </div>
   `;
 
@@ -81,7 +78,7 @@ async function sendWhatsApp(lead: LeadPayload) {
   const apiKey = process.env.WHATSAPP_BOT_API_KEY;
   if (!botUrl || !apiKey) return "skipped";
 
-  const text = `🔔 Novo lead!\n${lead.nome ?? ""} — ${lead.empresa ?? ""}\n${lead.whatsapp ?? ""}\nSegmento: ${lead.segmento ?? ""}\nOrçamento: ${lead.orcamento ?? ""}`;
+  const text = `🔔 Novo lead!\n${lead.nome ?? ""} — ${lead.empresa ?? ""}\n${lead.whatsapp ?? ""}\nDesafio: ${lead.desafio ?? ""}\nFaturamento: ${lead.procedimentos_mes ?? ""}\nVerba para anúncios: ${lead.orcamento ?? ""}`;
   const r = await fetch(`${botUrl}/send`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Api-Key": apiKey },
@@ -99,7 +96,8 @@ async function sendPush(lead: LeadPayload) {
 
   webpush.setVapidDetails("mailto:raioshops@gmail.com", vapidPublic, vapidPrivate);
 
-  const { data: subs } = await supabase.from("push_subscriptions").select("*");
+  const result = await adminAction("push_list");
+  const subs = (result.subscriptions ?? []) as Array<{ endpoint: string; p256dh: string; auth: string }>;
   if (!subs || subs.length === 0) return "no-subscriptions";
 
   const payload = JSON.stringify({
@@ -114,7 +112,7 @@ async function sendPush(lead: LeadPayload) {
         .sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload)
         .catch(async (err) => {
           if (err.statusCode === 404 || err.statusCode === 410) {
-            await supabase.from("push_subscriptions").delete().eq("id", s.id);
+            await adminAction("push_delete", { endpoint: s.endpoint });
           }
         })
     )

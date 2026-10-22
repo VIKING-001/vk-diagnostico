@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { adminAction, adminApiSecret, clientIp } from "../server/admin";
+import { adminAction, adminApiSecret, clientIp } from "../server/admin.js";
 
 const ALLOWED_ORIGINS = new Set([
   "https://vk-diagnostico.vercel.app",

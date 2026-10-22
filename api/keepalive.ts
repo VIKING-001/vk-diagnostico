@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { adminAction } from "../server/admin";
+import { adminAction } from "../server/admin.js";
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {

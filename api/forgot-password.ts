@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { randomInt } from "node:crypto";
-import { adminAction, clientIp } from "../server/admin";
+import { adminAction, clientIp } from "../server/admin.js";
 
 const RESEND_KEY = process.env.RESEND_API_KEY;
 const FALLBACK_EMAIL = "rodrigocabral366@gmail.com";

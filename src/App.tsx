@@ -65,7 +65,7 @@ function FormLayout() {
         </div>
 
         <motion.a
-          href="https://vkcompany.com.br"
+          href="https://vk-company.vercel.app"
           whileHover={{ x: -3 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
           className="text-[0.68rem] tracking-[0.18em] uppercase text-white/40 hover:text-white/70 transition-colors duration-200"

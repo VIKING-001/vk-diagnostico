@@ -106,7 +106,7 @@ export function LeadForm() {
     setStep(next);
   }
 
-  async function handleContactSubmit(contactData: Pick<LeadData, "nome" | "whatsapp"> & Partial<Pick<LeadData, "email" | "empresa" | "instagram">>) {
+  async function handleContactSubmit(contactData: Required<Pick<LeadData, "nome" | "whatsapp" | "email" | "empresa" | "instagram">>) {
     const full = { ...formData, ...contactData } as LeadData;
     setSubmitError("");
     setSending(true);
@@ -158,7 +158,7 @@ export function LeadForm() {
               eyebrow="Seus dados"
               title="Ótimo. Agora preciso"
               highlight="saber com quem falo."
-              subtitle="Usaremos essas informações para conversar sobre o seu cenário e combinar os próximos passos."
+              subtitle="Com esses dados, vamos analisar o cenário da sua empresa e entender se faz sentido avançarmos."
             />
           </motion.div>
         )}

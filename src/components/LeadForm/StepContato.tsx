@@ -4,11 +4,11 @@ import { z } from "zod";
 import { WHATSAPP_LINK } from "./shared";
 
 const schema = z.object({
-  nome: z.string().min(3, "Informe seu nome completo"),
-  whatsapp: z.string().min(14, "Informe um WhatsApp válido"),
-  email: z.string().email("Informe um e-mail válido").or(z.literal("")),
-  empresa: z.string(),
-  instagram: z.string(),
+  nome: z.string().trim().min(3, "Informe seu nome completo"),
+  whatsapp: z.string().trim().min(14, "Informe um WhatsApp válido"),
+  email: z.string().trim().email("Informe um e-mail válido"),
+  empresa: z.string().trim().min(2, "Informe o nome da empresa"),
+  instagram: z.string().trim().min(2, "Informe o Instagram da empresa"),
 });
 
 type ContatoData = z.infer<typeof schema>;
@@ -38,11 +38,11 @@ export function StepContato({ defaultValues, onNext, onBack, submitError }: Prop
   });
 
   return (
-    <form onSubmit={handleSubmit(onNext)} className="space-y-5">
+    <form noValidate onSubmit={handleSubmit(onNext)} className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="lead-nome" className={labelCls}>Nome completo *</label>
-          <input id="lead-nome" {...register("nome")} placeholder="Seu nome completo" autoComplete="name" className={inputCls} />
+          <input id="lead-nome" {...register("nome")} required placeholder="Seu nome completo" autoComplete="name" className={inputCls} />
           {errors.nome && <p className={errorCls}>{errors.nome.message}</p>}
         </div>
 
@@ -51,6 +51,7 @@ export function StepContato({ defaultValues, onNext, onBack, submitError }: Prop
           <input
             id="lead-whatsapp"
             {...register("whatsapp")}
+            required
             type="tel"
             inputMode="tel"
             autoComplete="tel"
@@ -62,19 +63,19 @@ export function StepContato({ defaultValues, onNext, onBack, submitError }: Prop
         </div>
 
         <div>
-          <label htmlFor="lead-email" className={labelCls}>E-mail <span className="text-white/45">(opcional)</span></label>
-          <input id="lead-email" {...register("email")} type="email" autoComplete="email" placeholder="voce@empresa.com" className={inputCls} />
+          <label htmlFor="lead-email" className={labelCls}>E-mail *</label>
+          <input id="lead-email" {...register("email")} required type="email" autoComplete="email" placeholder="voce@empresa.com" className={inputCls} />
           {errors.email && <p className={errorCls}>{errors.email.message}</p>}
         </div>
 
         <div>
-          <label htmlFor="lead-empresa" className={labelCls}>Empresa <span className="text-white/45">(opcional)</span></label>
-          <input id="lead-empresa" {...register("empresa")} autoComplete="organization" placeholder="Nome da empresa" className={inputCls} />
+          <label htmlFor="lead-empresa" className={labelCls}>Empresa *</label>
+          <input id="lead-empresa" {...register("empresa")} required autoComplete="organization" placeholder="Nome da empresa" className={inputCls} />
         </div>
 
         <div className="sm:col-span-2">
-          <label htmlFor="lead-instagram" className={labelCls}>Site ou Instagram <span className="text-white/45">(opcional)</span></label>
-          <input id="lead-instagram" {...register("instagram")} placeholder="site.com.br ou @suaempresa" className={inputCls} />
+          <label htmlFor="lead-instagram" className={labelCls}>Instagram *</label>
+          <input id="lead-instagram" {...register("instagram")} required placeholder="@suaempresa" className={inputCls} />
         </div>
       </div>
 
